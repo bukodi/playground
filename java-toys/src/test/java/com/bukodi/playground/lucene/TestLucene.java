@@ -5,27 +5,25 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.function.valuesource.RangeMapFloatFunction;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.IOUtils;
+import org.apache.lucene.store.NIOFSDirectory;
 import org.junit.Test;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 
 public class TestLucene {
 
     @Test
     public void testInMemoryIndex() throws Exception {
-        Directory memoryIndex = new ByteBuffersDirectory();
+        Path tmpIndexPath = Files.createTempDirectory("luceneIdx");
+        Directory index = new NIOFSDirectory(tmpIndexPath);
         StandardAnalyzer analyzer = new StandardAnalyzer();
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
-        IndexWriter writter = new IndexWriter(memoryIndex, indexWriterConfig);
+        IndexWriter writter = new IndexWriter(index, indexWriterConfig);
         Document document = new Document();
 
         String title = "Humpty Dumpty";
@@ -40,6 +38,7 @@ public class TestLucene {
         writter.addDocument(document);
         writter.close();
 
+        index.syncMetaData();
 
         //writter.deleteDocuments();
 
