@@ -61,4 +61,12 @@ func TestInitRepo(t *testing.T) {
 	}
 
 	t.Logf("Commit obj: %+v", obj)
+	fileIter, err := obj.Files()
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	fileIter.ForEach(func(f *object.File) error {
+		t.Logf("File name: %s", f.Name)
+		return nil
+	})
 }
