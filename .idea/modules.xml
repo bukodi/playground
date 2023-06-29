@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/go-toys.iml" filepath="$PROJECT_DIR$/go-toys.iml" />
-      <module fileurl="file://$PROJECT_DIR$/playground.iml" filepath="$PROJECT_DIR$/playground.iml" />
       <module fileurl="file://$PROJECT_DIR$/ts-toys.iml" filepath="$PROJECT_DIR$/ts-toys.iml" />
     </modules>
   </component>
