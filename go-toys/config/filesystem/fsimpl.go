@@ -1,12 +1,11 @@
 package filesystem
 
 import (
-	"crypto"
+	"github.com/go-git/go-git/v5/plumbing/hash"
 	"path/filepath"
 )
 
 var separator string = string(filepath.Separator)
-var hash crypto.Hash = crypto.SHA256
 
 type fsCfgState struct {
 }
