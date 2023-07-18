@@ -1,5 +1,8 @@
 package config
 
+// Empty directories and files will be skiped
+// hidden files and directories can be saved, but its excluded from checksum calculation
+
 type Provider interface {
 	Actual() (State, error)
 	LookupVersion(checksum string) (State, error)
@@ -7,8 +10,8 @@ type Provider interface {
 
 type State interface {
 	Checksum() string
-	Validate() error
-	GetBytes(path string) ([]byte, error)
-	GetBytesWithDefault(path string, defValue []byte) []byte
-	GetPaths(basePath string) ([]string, error)
+	Size() uint
+	Get(path string) []byte
+	List(basePath string) map[string][]byte
+	Add(files map[string][]byte) State
 }

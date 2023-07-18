@@ -19,3 +19,27 @@ func TestHashSum(t *testing.T) {
 		t.Logf("%x", h.Sum(nil))
 	}
 }
+
+func TestInheritance(t *testing.T) {
+	type A struct {
+		name string
+	}
+	type B struct {
+		A
+		size int
+	}
+
+	b := &B{
+		A: A{
+			name: "foo",
+		},
+		size: 1,
+	}
+
+	t.Logf("%s, %d", b.name, b.size)
+
+	a := b.A
+
+	t.Logf("%s", a.name)
+
+}

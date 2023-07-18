@@ -12,10 +12,7 @@ type fsProvider struct {
 var _ Provider = &fsProvider{}
 
 func (p *fsProvider) Actual() (State, error) {
-	s := fsState{
-		basePath: p.basePath,
-	}
-	return &s, nil
+	panic("implement me")
 }
 
 func (p *fsProvider) LookupVersion(checksum string) (State, error) {
@@ -59,9 +56,18 @@ func (f *fsState) GetBytesWithDefault(path string, defValue []byte) []byte {
 	}
 }
 
-func (f *fsState) GetPaths(basePath string) ([]string, error) {
-	//TODO implement me
-	panic("implement me")
+func (f *fsState) GetPaths(path string) (keyNames []string, subDirNames []string, err error) {
+	fullPath := filepath.Join(f.basePath, path)
+	dirEntries, err := os.ReadDir(fullPath)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, de := range dirEntries {
+		if de.IsDir() {
+			subDirNames = append(subDirNames, de.Name())
+		} else {
+			keyNames = append(keyNames, de.Name())
+		}
+	}
+	return keyNames, subDirNames, nil
 }
-
-var _ State = &fsState{}
