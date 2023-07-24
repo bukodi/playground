@@ -109,18 +109,13 @@ func (s *cfgState) Size() uint {
 }
 
 func (s *cfgState) Get(path string) []byte {
-	pathParts := strings.Split(path, "/")
+	pathParts := deleteEmpty(strings.Split(path, "/"))
 	return s.rootDir.replaceFile(pathParts, nil, false)
-}
-
-func (s *cfgState) GetWithDefault(path string, defValue []byte) []byte {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (s *cfgState) List(basePath string) map[string][]byte {
 	m := make(map[string][]byte)
-	pathParts := strings.Split(basePath, "/")
+	pathParts := deleteEmpty(strings.Split(basePath, "/"))
 	baseDir, content := s.rootDir.find(pathParts)
 	if len(content) > 0 {
 		m[basePath] = content
@@ -130,6 +125,16 @@ func (s *cfgState) List(basePath string) map[string][]byte {
 		baseDir.list("", m)
 	}
 	return m
+}
+
+func deleteEmpty(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
 }
 
 func checksum(pathString string, isHidden bool, content []byte) []byte {
@@ -151,7 +156,7 @@ func (s *cfgState) Add(files map[string][]byte) State {
 	newState := s.clone()
 
 	for name, file := range files {
-		pathParts := strings.Split(name, "/")
+		pathParts := deleteEmpty(strings.Split(name, "/"))
 		isHidden := false
 		for _, part := range pathParts {
 			if part[0] == '.' {
