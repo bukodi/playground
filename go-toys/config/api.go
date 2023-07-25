@@ -1,6 +1,6 @@
 package config
 
-// Empty directories and files will be skiped
+// Empty directories and files will be skipped
 // hidden files and directories can be saved, but its excluded from checksum calculation
 
 type Provider interface {
