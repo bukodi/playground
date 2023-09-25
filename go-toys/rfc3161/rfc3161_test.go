@@ -3,7 +3,7 @@ package rfc3161
 import (
 	"crypto"
 	"crypto/sha1"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -37,7 +37,7 @@ func TestUnmarshal(t *testing.T) {
 
 // Contruct the tsr manually
 func TestReqBuildManually(t *testing.T) {
-	mes, err := ioutil.ReadFile("./testdata/message.txt")
+	mes, err := os.ReadFile("./testdata/message.txt")
 	if err != nil {
 		t.Error(err)
 	}

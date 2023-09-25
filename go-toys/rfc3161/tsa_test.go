@@ -31,11 +31,12 @@ func TestTSA(t *testing.T) {
 	pemBlock, _ := pem.Decode(signPemData)
 	signCer, err := x509.ParseCertificate(pemBlock.Bytes)
 
-	syspool, err := x509.SystemCertPool()
 	caPemData, err := os.ReadFile("testdata/freetsa_rootca.crt")
-	if !syspool.AppendCertsFromPEM(caPemData) {
+	if err != nil {
 		t.Fatalf("%+v", err)
 	}
+	rfc3161.RootCerts = x509.NewCertPool()
+	rfc3161.RootCerts.AppendCertsFromPEM(caPemData)
 
 	err = tsrsp.Verify(tsreq, signCer)
 	if err != nil {
@@ -46,6 +47,6 @@ func TestTSA(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 	t.Logf("Generation Time: %s", tsInfo.GenTime.Format(time.RFC3339Nano))
-	t.Logf("Local Time: %s", tsInfo.GenTime.Local().Format(time.RFC3339))
+	t.Logf("Local Time: %s", tsInfo.GenTime.Local().Format(time.DateTime))
 
 }
