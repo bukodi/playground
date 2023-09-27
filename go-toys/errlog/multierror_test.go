@@ -58,3 +58,12 @@ func TestMultiErrorWithJoin(t *testing.T) {
 		t.Error("Not wrapped error")
 	}
 }
+
+func TestDeferErr(t *testing.T) {
+	fn := func() (retErr error) {
+		defer func() { retErr = errors.Join(retErr, errors.New("error in defer")) }()
+		return errors.New("error in return")
+	}
+	err := fn()
+	t.Logf("%+v", err)
+}

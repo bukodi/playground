@@ -2,7 +2,6 @@ package config_test
 
 import (
 	"crypto/sha256"
-	"errors"
 	"github.com/bukodi/playground/config"
 	"os"
 	"path/filepath"
@@ -81,13 +80,4 @@ func TestHashSum(t *testing.T) {
 		h.Write([]byte{1, 2, 3, 4, 5, 6})
 		t.Logf("%x", h.Sum(nil))
 	}
-}
-
-func TestDeferErr(t *testing.T) {
-	fn := func() (retErr error) {
-		defer func() { retErr = errors.Join(retErr, errors.New("Error in defer")) }()
-		return errors.New("Error in return")
-	}
-	err := fn()
-	t.Logf("%+v", err)
 }
