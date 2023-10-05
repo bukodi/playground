@@ -11,13 +11,13 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.boot.version>3.0.6</spring.boot.version>
+        <spring.boot.version>3.1.4</spring.boot.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.72</version>
+            <version>1.75</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
