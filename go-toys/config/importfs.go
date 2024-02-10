@@ -4,11 +4,16 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
+	"embed"
+	_ "embed"
 	"errors"
 	"io"
 	"os"
 	"path/filepath"
 )
+
+//go:embed testdata/cfgdir/.meta
+var metaDir embed.FS
 
 func ImportDir(basePath string) (State, error) {
 
@@ -64,6 +69,16 @@ func ExportTGZ(s State, out io.WriteCloser, addMeta bool) (retErr error) {
 
 		if _, err := tw.Write(content); err != nil {
 			return err
+		}
+	}
+
+	if addMeta {
+		entries, err := metaDir.ReadDir()
+		if err != nil {
+			return err
+		}
+		for _, e := range entries {
+			e.IsDir()
 		}
 	}
 
