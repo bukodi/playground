@@ -6,9 +6,13 @@ import (
 	"strings"
 )
 
-const AttrErr = "err"
-const AttrPkg = "pkg"
+const ErrorKey = "err"
+const PackageKey = "pkg"
 const AttrModule = "module"
+
+func ErrorAttr(err error) slog.Attr {
+	return slog.Any(ErrorKey, err)
+}
 
 func NewPkgLogger(parentLogger *slog.Logger) *slog.Logger {
 	pkgName := "main"
