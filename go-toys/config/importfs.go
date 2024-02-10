@@ -73,7 +73,7 @@ func ExportTGZ(s State, out io.WriteCloser, addMeta bool) (retErr error) {
 	}
 
 	if addMeta {
-		entries, err := metaDir.ReadDir()
+		entries, err := metaDir.ReadDir(".meta")
 		if err != nil {
 			return err
 		}
