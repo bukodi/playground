@@ -8,7 +8,8 @@ require (
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/google/go-tpm v0.9.0
 	github.com/google/go-tpm-tools v0.4.1
-	github.com/knadh/koanf/v2 v2.0.1
+	github.com/nats-io/nats-server/v2 v2.10.10
+	github.com/nats-io/nats.go v1.32.0
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/openfga/api/proto v0.0.0-20240205143322-c491fa728f66
 	github.com/openfga/go-sdk v0.3.3
@@ -54,14 +55,15 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/karlseguin/ccache/v3 v3.0.5 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/knadh/koanf/maps v0.1.1 // indirect
+	github.com/klauspost/compress v1.17.5 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
-	github.com/mitchellh/copystructure v1.2.0 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/mitchellh/reflectwalk v1.0.2 // indirect
+	github.com/minio/highwayhash v1.0.2 // indirect
 	github.com/natefinch/wrap v0.2.0 // indirect
+	github.com/nats-io/jwt/v2 v2.5.3 // indirect
+	github.com/nats-io/nkeys v0.4.7 // indirect
+	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.18.0 // indirect
@@ -91,6 +93,7 @@ require (
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/term v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240125205218-1f4bbc51befe // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240125205218-1f4bbc51befe // indirect
