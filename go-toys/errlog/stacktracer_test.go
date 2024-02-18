@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/bukodi/playground/errlog"
 	"log/slog"
+	"os"
 	"testing"
 )
 
@@ -25,5 +26,10 @@ func TestStacktraceMulti(t *testing.T) {
 	err2 := errlog.WithStack(err1)
 	t.Logf("Err2 :%#v", err2)
 
-	slog.Error("Error occured", slog.LevelKey)
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource:   true,
+		Level:       slog.LevelDebug,
+		ReplaceAttr: nil,
+	})))
+	slog.Error("Error occured", errlog.ErrorKey, err2)
 }
