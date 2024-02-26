@@ -5,6 +5,8 @@ go 1.21.5
 toolchain go1.21.7
 
 require (
+	github.com/digitorus/pdf v0.1.2
+	github.com/digitorus/pdfsign v0.0.0-20240212190606-3fe840b920a1
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/google/go-tpm v0.9.0
 	github.com/google/go-tpm-tools v0.4.1
@@ -20,7 +22,7 @@ require (
 	github.com/samber/do v1.6.0
 	github.com/stretchr/testify v1.8.4
 	github.com/symbolicsoft/kyber-k2so v0.2.0
-	golang.org/x/crypto v0.18.0
+	golang.org/x/crypto v0.19.0
 	golang.org/x/tools v0.17.0
 	google.golang.org/grpc v1.61.0
 )
@@ -36,6 +38,8 @@ require (
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/digitorus/pkcs7 v0.0.0-20230220124406-51331ccfc40f // indirect
+	github.com/digitorus/timestamp v0.0.0-20230220124323-d542479a2425 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
@@ -57,6 +61,7 @@ require (
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/klauspost/compress v1.17.5 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/mattetti/filebuffer v1.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
@@ -90,8 +95,8 @@ require (
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
-	golang.org/x/term v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/term v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240125205218-1f4bbc51befe // indirect
