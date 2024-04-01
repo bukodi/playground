@@ -66,6 +66,14 @@ func TestSlogPlain(t *testing.T) {
 	foo(ctx)
 }
 
+var dynamicLevel = slog.LevelInfo
+
+type inlineLeveler struct {
+}
+
+func (inlineLeveler) Level() slog.Level {
+	return dynamicLevel
+}
 func TestSlogWithHandler(t *testing.T) {
 	ctx := context.TODO()
 	foo(ctx)
@@ -84,13 +92,18 @@ func TestSlogWithHandler(t *testing.T) {
 	// Change again
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource:   false,
-		Level:       slog.LevelInfo,
+		Level:       inlineLeveler{},
 		ReplaceAttr: nil,
 	})))
 
 	foo(ctx) //pkgLogger = NewPkgLogger(nil)
 
+	slog.Info("top level info")
 	slog.Debug("top level debug")
+	dynamicLevel = slog.LevelDebug
+	slog.Info("top level info after dynamicLevel = slog.LevelDebug")
+	slog.Debug("top level debug after dynamicLevel = slog.LevelDebug")
+
 }
 
 func TestSlogHandler(t *testing.T) {

@@ -16,6 +16,9 @@ type withStack struct {
 	stack []uintptr
 }
 
+var _ StackTracer = withStack{}
+var _ StackTracer = &withStack{}
+
 func (ws withStack) Callers() []uintptr {
 	return ws.stack
 }
