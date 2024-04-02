@@ -1,7 +1,8 @@
 package com.bukodi.playground.pqckyber;
 
-import org.bouncycastle.pqc.jcajce.interfaces.KyberPrivateKey;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
+import org.bouncycastle.pqc.jcajce.provider.kyber.BCKyberPrivateKey;
+import org.bouncycastle.pqc.jcajce.provider.kyber.BCKyberPublicKey;
 import org.bouncycastle.pqc.jcajce.spec.KyberParameterSpec;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,13 +33,14 @@ public class TestPQCKyber {
 
         // get private and public key
         PrivateKey privateKey = keyPair.getPrivate();
-        KyberPrivateKey kyberPrivateKey = (KyberPrivateKey)privateKey;
-        //PrivateKeyInfo privKeyInfo = PrivateKeyInfoFactory.createPrivateKeyInfo(privateKey);
+        BCKyberPrivateKey kyberPrivateKey = (BCKyberPrivateKey)privateKey;
+        //PrivateKeyInfo privKeyInfo = PrivateKeyInfoFactory.createPrivateKeyInfo(kyberPrivateKey.getParameterSpec());
         //KyberPrivateKeyParameters kyberPrivateKeyParams = (KyberPrivateKeyParameters)privKeyInfo;
         PublicKey publicKey = keyPair.getPublic();
+        BCKyberPublicKey kyberPublicKey = (BCKyberPublicKey) publicKey;
 
         // storing the key as byte array
-        byte[] privateKeyByte = privateKey.getEncoded();
+        byte[] privateKeyByte = kyberPrivateKey.getEncoded();
         byte[] publicKeyByte = publicKey.getEncoded();
         System.out.printf( "Private key %d bytes: %s\n", privateKeyByte.length, byteArrayToHex(privateKeyByte));
         System.out.printf( "Public key %d bytes: %s\n", publicKeyByte.length, byteArrayToHex(publicKeyByte));
