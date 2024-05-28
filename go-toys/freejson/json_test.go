@@ -18,15 +18,36 @@ const testJson = `{
 	"float": 1.1
 }`
 
+func TestSingleString(t *testing.T) {
+	var data any
+	if err := json.Unmarshal([]byte(`"hello"`), &data); err != nil {
+		t.Error(err)
+	}
+	// Output:
+	out := new(strings.Builder)
+	dumpNode(out, data, "")
+	t.Log(out.String())
+}
+
 func TestUnmarshal(t *testing.T) {
-	var data map[string]interface{}
+	var data any
 	if err := json.Unmarshal([]byte(testJson), &data); err != nil {
 		t.Error(err)
 	}
 	// Output:
 	out := new(strings.Builder)
-	dumpMap(out, data, "")
+	dumpNode(out, data, "")
 	t.Log(out.String())
+}
+
+func dumpNode(out io.StringWriter, d any, indent string) {
+	if d == nil {
+		out.WriteString("null\n")
+	} else if s, ok := d.(string); ok {
+		out.WriteString(fmt.Sprintf("%s%q\n", indent, s))
+	} else if m, ok := d.(map[string]any); ok {
+		dumpMap(out, m, indent)
+	}
 }
 
 func dumpMap(out io.StringWriter, m map[string]interface{}, indent string) {

@@ -1,6 +1,0 @@
-{
-  "key01": "value01",
-  "key02": {
-    "subKey01": "subValue02"
-  }
-}

@@ -1,0 +1,14 @@
+{
+  "key01": "value01",
+  "key02": true,
+  "key03": 42,
+  "key04": 3.1415,
+  "values": [
+    "value01",
+    "value02",
+    "value03"
+  ],
+  "object": {
+    "subKey01": "value01"
+  }
+}

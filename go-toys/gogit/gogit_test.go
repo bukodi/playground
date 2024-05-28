@@ -11,6 +11,7 @@ import (
 )
 
 func TestInitRepo(t *testing.T) {
+
 	directory := t.TempDir()
 
 	r, err := git.PlainInit(directory, false)
@@ -23,7 +24,7 @@ func TestInitRepo(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 
-	// ... we need a file to commit so let's create a new file inside of the
+	// ... we need a file to commit so let's create a new file inside the
 	// worktree of the project using the go standard library.
 	filename := filepath.Join(directory, "example-git-file")
 	err = os.WriteFile(filename, []byte("hello world!"), 0644)
@@ -47,7 +48,7 @@ func TestInitRepo(t *testing.T) {
 			Email: "john@doe.org",
 			When:  time.Now(),
 		},
-		SignKey: nil,
+		Signer: nil,
 	})
 
 	if err != nil {
@@ -69,4 +70,10 @@ func TestInitRepo(t *testing.T) {
 		t.Logf("File name: %s", f.Name)
 		return nil
 	})
+	tagRef, err := r.CreateTag("v0.0.1", commit, &git.CreateTagOptions{
+		Tagger:  nil,
+		Message: "",
+		SignKey: nil,
+	})
+	t.Logf("Tag ref: %+v", tagRef)
 }
