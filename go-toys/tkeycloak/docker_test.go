@@ -18,4 +18,5 @@ func TestDockerStart(t *testing.T) {
 		defer kc.Stop(context.Background())
 	}
 
+	t.Logf("Keycloak container started: %s", kc.id)
 }

@@ -12,6 +12,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"path/filepath"
 )
 
 type KeycloakContainer struct {
@@ -21,6 +22,7 @@ type KeycloakContainer struct {
 	DockerTimeoutInSec *int
 	cli                *client.Client
 	id                 string
+	ImportPath         string
 }
 
 func (kc *KeycloakContainer) checkDefaults() {
@@ -33,6 +35,15 @@ func (kc *KeycloakContainer) checkDefaults() {
 	if kc.Image == "" {
 		kc.Image = "quay.io/keycloak/keycloak:latest"
 		//kc.Image = "quay.io/keycloak/keycloak:24.0.4"
+	}
+	if kc.ImportPath != "" {
+		if !filepath.IsAbs(kc.ImportPath) {
+			if abs, err := filepath.Abs(kc.ImportPath); err == nil {
+				if fi, err := os.Stat(abs); err == nil && fi.IsDir() {
+					kc.ImportPath = abs
+				}
+			}
+		}
 	}
 }
 
@@ -71,14 +82,14 @@ func (kc *KeycloakContainer) Start(ctx context.Context) error {
 				},
 			},
 		},
-		Mounts: []mount.Mount{
-			{
-				Type:   mount.TypeBind,
-				Source: "/src/margareta/margareta-mda-srv/src/test/keycloak/data",
-				Target: "/opt/keycloak/data/import",
-			},
-		},
 		AutoRemove: true,
+	}
+	if kc.ImportPath != "" {
+		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: kc.ImportPath,
+			Target: "/opt/keycloak/data/import",
+		})
 	}
 
 	if exists, err := kc.checkImageExists(ctx); err != nil {
