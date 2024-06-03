@@ -23,6 +23,7 @@ import (
 )
 
 type KeycloakContainer struct {
+	TcpPort       int
 	AdminName     string
 	AdminPass     string
 	Image         string
@@ -56,6 +57,13 @@ func (kc *KeycloakContainer) checkDefaults() {
 			}
 		}
 	}
+	if kc.TcpPort == 0 {
+		kc.TcpPort = 3999
+	}
+}
+
+func (kc *KeycloakContainer) tcpPort() string {
+	return fmt.Sprintf("%d", kc.TcpPort)
 }
 
 func (kc *KeycloakContainer) Start(ctx context.Context) error {
@@ -75,21 +83,21 @@ func (kc *KeycloakContainer) Start(ctx context.Context) error {
 		Cmd: []string{
 			"start-dev",
 			"--import-realm",
-			"--hostname-port=3999",
-			"--http-port=3999",
+			"--hostname-port=" + kc.tcpPort(),
+			"--http-port=" + kc.tcpPort(),
 			"--log-level=INFO",
 		},
 		ExposedPorts: nat.PortSet{
-			"3999/tcp": struct{}{},
+			nat.Port(kc.tcpPort() + "/tcp"): struct{}{},
 		},
 	}
 
 	hostConfig := &container.HostConfig{
 		PortBindings: nat.PortMap{
-			"3999/tcp": []nat.PortBinding{
+			nat.Port(kc.tcpPort() + "/tcp"): []nat.PortBinding{
 				{
 					HostIP:   "0.0.0.0",
-					HostPort: "3999",
+					HostPort: kc.tcpPort(),
 				},
 			},
 		},
@@ -144,7 +152,7 @@ func (kc *KeycloakContainer) Start(ctx context.Context) error {
 	}
 
 	err = scanContainerLog(ctx, out, func(line string) error {
-		slog.Info(line, "type", "out")
+		slog.Debug(line, "type", "out")
 		if strings.Contains(line, "[io.quarkus] (main) Keycloak") &&
 			strings.Contains(line, "started") {
 			return fmt.Errorf("")
@@ -156,7 +164,7 @@ func (kc *KeycloakContainer) Start(ctx context.Context) error {
 		return fmt.Errorf("ERROR: %s", line)
 	})
 	if err.Error() == "" {
-		slog.Info("Container started", "id", kc.id)
+		slog.Info("KeycloakContainer started", "id", kc.id)
 		return nil
 	} else {
 		return fmt.Errorf("container start failed: %w", err)
@@ -164,20 +172,30 @@ func (kc *KeycloakContainer) Start(ctx context.Context) error {
 }
 
 func scanContainerLog(ctx context.Context, out io.ReadCloser, fnOutLine func(string) error, fnErrLine func(string) error) error {
+	if r := recover(); r != nil {
+		fmt.Println("main select:", r)
+	}
+
 	outPipeR, outPipeW := io.Pipe()
 	errPipeR, errPipeW := io.Pipe()
-	defer func() {
-		outPipeW.Close()
-		errPipeW.Close()
-		outPipeR.Close()
-		errPipeR.Close()
-	}()
+	//defer func() {
+	//	outPipeW.Close()
+	//	errPipeW.Close()
+	//	outPipeR.Close()
+	//	errPipeR.Close()
+	//}()
 
 	outLinesCh := make(chan string)
 	errLinesCh := make(chan string)
 
 	// Copy the output to standard output
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("split docker pipe:", r)
+			}
+		}()
+
 		_, err := stdcopy.StdCopy(outPipeW, errPipeW, out)
 		if err != nil {
 			log.Fatal(err)
@@ -194,7 +212,9 @@ func scanContainerLog(ctx context.Context, out io.ReadCloser, fnOutLine func(str
 
 		stdScanner := bufio.NewScanner(outPipeR)
 		for stdScanner.Scan() {
-			outLinesCh <- stdScanner.Text()
+			if stdScanner.Err() == nil {
+				outLinesCh <- stdScanner.Text()
+			}
 		}
 		close(outLinesCh)
 	}()
@@ -208,7 +228,9 @@ func scanContainerLog(ctx context.Context, out io.ReadCloser, fnOutLine func(str
 
 		errScanner := bufio.NewScanner(errPipeR)
 		for errScanner.Scan() {
-			errLinesCh <- errScanner.Text()
+			if errScanner.Err() == nil {
+				errLinesCh <- errScanner.Text()
+			}
 		}
 		close(errLinesCh)
 	}()

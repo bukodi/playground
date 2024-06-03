@@ -1,0 +1,6 @@
+### GET request to example server
+GET http://0.0.0.0:3999/admin/realms
+Authorization: Basic webadmin Passw0rd
+
+
+###
