@@ -1,4 +1,4 @@
-package collections
+package generics
 
 // https://www.dolthub.com/blog/2024-07-01-golang-generic-collections/
 
