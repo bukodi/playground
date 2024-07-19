@@ -1,0 +1,13 @@
+Hi Dimtry,
+
+I tested the new version, but it has the same problem.
+
+I extracted the Redemption64.dll from Redemption64.zip, and registered it with regsvr32 command.
+I'm using the same code that I sent previously.
+The RDOEncryptedMessage.GetDecryptedMessage() function throws the same exception as before:
+ "Failed to get the Recipients Certificate needed to decrypt the message".
+
+I checked the Version property of the RDOSession object, and it is "6.6.0.6318"
+
+Thanks,
+László Bukodi
