@@ -64,7 +64,7 @@ func TestFSExport(t *testing.T) {
 	if err != nil {
 		t.Errorf("%+v", err)
 	}
-	dump(t, s, "imported")
+	dump(t, s, "exported")
 }
 
 func TestHashSum(t *testing.T) {

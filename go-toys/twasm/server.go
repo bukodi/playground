@@ -15,12 +15,15 @@ import (
 var content embed.FS
 
 func main() {
-	fs := http.FileServer(http.FS(content))
-	http.Handle("/", fs)
 
-	err := http.ListenAndServe(":9090", nil)
+	mux := http.NewServeMux()
+	mux.Handle("/", http.FileServer(http.FS(content)))
+
+	fmt.Println("Starting server on :9090")
+	err := http.ListenAndServe(":9090", mux)
 	if err != nil {
 		fmt.Println("Failed to start server", err)
 		return
 	}
+
 }

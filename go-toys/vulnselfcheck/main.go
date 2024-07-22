@@ -15,7 +15,7 @@ func main() {
 
 func selfCheck() {
 	ctx := context.Background()
-	cmd := scan.Command(ctx, "-mode", "binary", os.Args[0])
+	cmd := scan.Command(ctx, "-mode", "binary", "-show", "verbose", os.Args[0])
 	err := cmd.Start()
 	if err == nil {
 		err = cmd.Wait()
