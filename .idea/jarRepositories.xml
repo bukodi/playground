@@ -7,14 +7,14 @@
       <option name="url" value="https://repo.noreg.intra/repository/maven-public/" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="com.noreg.internal.snapshots" />
-      <option name="name" value="Noreg Internal Snapshots Repository" />
-      <option name="url" value="https://repo.noreg.intra/repository/maven-snapshots/" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="central" />
       <option name="name" value="Central Repository" />
       <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="com.noreg.internal.snapshots" />
+      <option name="name" value="Noreg Internal Snapshots Repository" />
+      <option name="url" value="https://repo.noreg.intra/repository/maven-snapshots/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />
