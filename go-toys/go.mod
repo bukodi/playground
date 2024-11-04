@@ -6,11 +6,13 @@ require (
 	github.com/aws/aws-sdk-go v1.50.38
 	github.com/aws/aws-sigv4-auth-cassandra-gocql-driver-plugin v1.1.0
 	github.com/blugelabs/bluge v0.2.2
+	github.com/coinbase/kryptology v1.8.0
 	github.com/digitorus/pdf v0.1.2
 	github.com/digitorus/pdfsign v0.0.0-20240212190606-3fe840b920a1
 	github.com/docker/docker v24.0.7+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/fumiama/go-docx v0.0.0-20240428133836-8f66e2b8667f
+	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/gocql/gocql v1.6.0
 	github.com/google/go-tpm v0.9.0
@@ -20,6 +22,7 @@ require (
 	github.com/knadh/koanf/v2 v2.1.1
 	github.com/nats-io/nats-server/v2 v2.10.10
 	github.com/nats-io/nats.go v1.32.0
+	github.com/neurosnap/sentences v1.1.2
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/openfga/api/proto v0.0.0-20240205143322-c491fa728f66
 	github.com/openfga/go-sdk v0.3.3
@@ -51,6 +54,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
+	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
 	github.com/RoaringBitmap/roaring v0.9.4 // indirect
@@ -66,10 +70,13 @@ require (
 	github.com/blugelabs/bluge_segment_api v0.2.0 // indirect
 	github.com/blugelabs/ice v1.0.0 // indirect
 	github.com/blugelabs/ice/v2 v2.0.1 // indirect
+	github.com/btcsuite/btcd v0.21.0-beta.0.20201114000516-e9c7a5ac6401 // indirect
+	github.com/bwesterb/go-ristretto v1.2.3 // indirect
 	github.com/caio/go-tdigest v3.1.0+incompatible // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
+	github.com/consensys/gnark-crypto v0.5.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-metro v0.0.0-20180109044635-280f6062b5bc // indirect
@@ -82,7 +89,6 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fumiama/imgsz v0.0.2 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
-	github.com/gdamore/tcell/v2 v2.6.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
@@ -122,7 +128,6 @@ require (
 	github.com/nats-io/jwt/v2 v2.5.3 // indirect
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
-	github.com/neurosnap/sentences v1.1.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
