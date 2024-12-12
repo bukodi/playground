@@ -8,6 +8,10 @@ type KeyStore[T Key] interface {
 	Keys() []T
 }
 
+type Provider[T Key] interface {
+	KeyStores() []KeyStore[T]
+}
+
 type P11Key struct {
 }
 
@@ -31,3 +35,13 @@ var Registry = RegistryType{}
 type RegistryType struct {
 	stores []KeyStore[Key]
 }
+
+type P11Provider struct {
+}
+
+func (p *P11Provider) KeyStores() []KeyStore[*P11Key] {
+	//TODO implement me
+	panic("implement me")
+}
+
+var _ Provider[*P11Key] = &P11Provider{}
