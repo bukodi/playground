@@ -1,21 +1,17 @@
 package com.bukodi.playground.pqcbc;
 
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
 import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
 import org.bouncycastle.jcajce.interfaces.MLDSAPublicKey;
-import org.bouncycastle.jcajce.provider.asymmetric.mldsa.BCMLDSAPrivateKey;
-import org.bouncycastle.jcajce.provider.asymmetric.mldsa.MLDSAKeyPairGeneratorSpi;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
+import org.bouncycastle.jcajce.spec.MLKEMParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.pqc.crypto.mldsa.MLDSAParameters;
+import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
+import org.bouncycastle.pqc.jcajce.spec.KyberParameterSpec;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.security.*;
-import java.util.Arrays;
 
 public class TestBouncyCastlePQC {
 
@@ -30,10 +26,10 @@ public class TestBouncyCastlePQC {
     @Test
     public void testMLDSAApi() throws Exception {
         KeyPair kp = PQCUtil.generateKeyPair(MLDSAParameterSpec.ml_dsa_44);
-        String privatePem = PQCUtil.exportPrivateKey((MLDSAPrivateKey) kp.getPrivate());
+        String privatePem = PQCUtil.exportKey((MLDSAPrivateKey) kp.getPrivate());
         System.out.println("Private key PEM: " + privatePem);
 
-        String publicPem = PQCUtil.exportPublicKey((MLDSAPublicKey) kp.getPublic());
+        String publicPem = PQCUtil.exportKey((MLDSAPublicKey) kp.getPublic());
         System.out.println("Public key PEM: " + publicPem);
 
         MLDSAPublicKey pubKey2 = PQCUtil.importPublicKey(publicPem);
@@ -46,43 +42,60 @@ public class TestBouncyCastlePQC {
 
     }
 
+    @Test
+    public void testDilithium5Api() throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance(DilithiumParameterSpec.dilithium5.getName(), "BC");
+        kpg.initialize(DilithiumParameterSpec.dilithium5, new SecureRandom());
+        KeyPair kp = kpg.generateKeyPair();
 
-        @Test
-    public void testMLDSA() throws Exception {
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance(MLDSAParameterSpec.ml_dsa_44.getName(), "BC");
-        if (kpg instanceof MLDSAKeyPairGeneratorSpi) {
-            System.out.println("MLDSAKeyPairGenerator");
-        }
-        kpg.initialize(MLDSAParameterSpec.ml_dsa_44, new SecureRandom());
-        KeyPair keyPair = kpg.generateKeyPair();
+        String privatePem = PQCUtil.exportKey( kp.getPrivate());
+        System.out.println("Private key PEM: " + privatePem);
 
-        // get private and public key
-        PrivateKey privateKey = keyPair.getPrivate();
-        System.out.println(privateKey.getAlgorithm());
-        MLDSAPrivateKey mldsaPrivateKey = (MLDSAPrivateKey)privateKey;
-        MLDSAParameterSpec pramSpec = mldsaPrivateKey.getParameterSpec();
+        String publicPem = PQCUtil.exportKey( kp.getPublic());
+        System.out.println("Public key PEM: " + publicPem);
 
-        PublicKey publicKey = keyPair.getPublic();
-        System.out.println(publicKey.getAlgorithm());
-        MLDSAPublicKey mldsaPublicKey = (MLDSAPublicKey) publicKey;
-        MLDSAParameterSpec pramSpecPub = mldsaPublicKey.getParameterSpec();
+        PublicKey pubKey2 = PQCUtil.importPublicKey(publicPem);
+        Assert.assertEquals("Public key", kp.getPublic(), pubKey2);
 
-        KeyFactory keyFactory = KeyFactory.getInstance(MLDSAParameters.ml_dsa_44.getName(), "BC");
-        System.out.println(keyFactory.getClass().getName());
+        PrivateKey privKey2 = PQCUtil.importPrivateKey(privatePem);
+        Assert.assertEquals("Private key", kp.getPrivate(), privKey2);
 
-        // //MLDSAPrivateKeyParameters mldsaPrivateKeyParams = (MLDSAPrivateKeyParameters)privKeyInfo;
-        // PublicKey publicKey = keyPair.getPublic();
-        // BCPQCMultiLayerPublicKey mldsaPublicKey = (BCPQCMultiLayerPublicKey) publicKey;
-        //
-        // // storing the key as byte array
-        // byte[] privateKeyByte = mldsaPrivateKey.getEncoded();
-        // byte[] publicKeyByte = publicKey.getEncoded();
-        // System.out.printf( "Private key %d bytes: %s\n", privateKeyByte.length, byteArrayToHex(privateKeyByte));
-        // System.out.printf( "Public key %d bytes: %s\n", publicKeyByte.length, byteArrayToHex(publicKeyByte));
     }
 
-    public KeyPair generateKeyPair( MLDSAParameterSpec alg ) {
+    @Test
+    public void testMLKEMApi() throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance(MLKEMParameterSpec.ml_kem_512.getName(), "BC");
+        kpg.initialize(MLKEMParameterSpec.ml_kem_512, new SecureRandom());
+        KeyPair kp = kpg.generateKeyPair();
+        String privatePem = PQCUtil.exportKey( kp.getPrivate());
+        System.out.println("Private key PEM: " + privatePem);
 
-        return null;
+        String publicPem = PQCUtil.exportKey( kp.getPublic());
+        System.out.println("Public key PEM: " + publicPem);
+
+        PublicKey pubKey2 = PQCUtil.importPublicKey(publicPem);
+        Assert.assertEquals("Public key", kp.getPublic(), pubKey2);
+
+        PrivateKey privKey2 = PQCUtil.importPrivateKey(privatePem);
+        Assert.assertEquals("Private key", kp.getPrivate(), privKey2);
     }
+
+    @Test
+    public void testKyberApi() throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance(KyberParameterSpec.kyber512.getName(), "BC");
+        kpg.initialize(KyberParameterSpec.kyber512, new SecureRandom());
+        KeyPair kp = kpg.generateKeyPair();
+        String privatePem = PQCUtil.exportKey( kp.getPrivate());
+        System.out.println("Private key PEM: " + privatePem);
+
+        String publicPem = PQCUtil.exportKey( kp.getPublic());
+        System.out.println("Public key PEM: " + publicPem);
+
+        PublicKey pubKey2 = PQCUtil.importPublicKey(publicPem);
+        Assert.assertEquals("Public key", kp.getPublic(), pubKey2);
+
+        PrivateKey privKey2 = PQCUtil.importPrivateKey(privatePem);
+        Assert.assertEquals("Private key", kp.getPrivate(), privKey2);
+    }
+
 }

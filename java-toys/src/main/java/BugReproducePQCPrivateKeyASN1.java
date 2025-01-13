@@ -1,10 +1,8 @@
-package com.bukodi.playground.pqcbc;
-
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.jcajce.JcaMiscPEMGenerator;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -16,11 +14,38 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
-public class PQCUtil {
-    public static KeyPair generateKeyPair(MLDSAParameterSpec alg ) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance(MLDSAParameterSpec.ml_dsa_44.getName(), "BC");
-        kpg.initialize(MLDSAParameterSpec.ml_dsa_44, new SecureRandom());
-        return kpg.generateKeyPair();
+public class BugReproducePQCPrivateKeyASN1 {
+
+    private static String bcGeneratedMLDSA44 = "-----BEGIN PRIVATE KEY-----\n" +
+            "MDQCAQAwCwYJYIZIAWUDBAMRBCIEIAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZ\n" +
+            "GhscHR4f\n" +
+            "-----END PRIVATE KEY-----";
+
+
+    // See https://datatracker.ietf.org/doc/draft-ietf-lamps-dilithium-certificates/05/ Appecdix C.1.
+    private static String ietfExampleMLDSA44 = "-----BEGIN PRIVATE KEY-----\n" +
+            "MDICAQAwCwYJYIZIAWUDBAMRBCAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRob\n" +
+            "HB0eHw==\n" +
+            "-----END PRIVATE KEY-----";
+
+
+    // See https://datatracker.ietf.org/doc/draft-ietf-lamps-kyber-certificates/07/ Appecdix C.1.
+    private static String ietfExampleMLKEM512 = "-----BEGIN PRIVATE KEY-----\n" +
+            "MDICAQAwCwYJYIZIAWUDBAMRBCAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRob\n" +
+            "HB0eHw==\n" +
+            "-----END PRIVATE KEY-----";
+
+    public static void main(String[] args) throws Exception {
+        Security.addProvider(new BouncyCastleProvider());
+
+        String pem = ietfExampleMLDSA44;
+        byte[] asn1Bytes = (new PemReader( new java.io.StringReader(pem) )).readPemObject().getContent();
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(asn1Bytes);
+        PrivateKeyInfo privKeyInfo = PrivateKeyInfo.getInstance(keySpec.getEncoded());
+        ASN1ObjectIdentifier algOid = privKeyInfo.getPrivateKeyAlgorithm().getAlgorithm();
+        PrivateKey privKey = KeyFactory.getInstance(algOid.getId(), "BC").generatePrivate(new PKCS8EncodedKeySpec(asn1Bytes));
+        //PrivateKey privKey = KeyFactory.getInstance( MLDSAParameters.ml_dsa_44.getName(), "BC").generatePrivate(new PKCS8EncodedKeySpec(asn1Bytes));
+        System.out.println("Private key: " + privKey);
     }
 
     public static String exportKey( Key key ) throws IOException {
