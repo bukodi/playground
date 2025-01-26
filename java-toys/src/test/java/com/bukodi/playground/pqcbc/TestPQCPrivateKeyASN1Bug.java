@@ -1,6 +1,5 @@
 package com.bukodi.playground.pqcbc;
 
-import org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.jcajce.JcaMiscPEMGenerator;
@@ -33,10 +32,9 @@ public class TestPQCPrivateKeyASN1Bug {
         }));
         KeyPair kp = kpg.generateKeyPair();
 
-        MLDSAPrivateKey mldsaPrivKey = (MLDSAPrivateKey) kp.getPrivate();
         StringWriter sw = new StringWriter();
         try( JcaPEMWriter pemWriter = new JcaPEMWriter(sw) ) {
-            pemWriter.writeObject( new JcaMiscPEMGenerator(mldsaPrivKey));;
+            pemWriter.writeObject( new JcaMiscPEMGenerator(kp.getPrivate()));;
         };
         System.out.println("Private key PEM: \n" + sw);
     }

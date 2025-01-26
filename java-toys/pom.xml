@@ -16,13 +16,13 @@
     <dependencies>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-debug-jdk18on</artifactId>
-            <version>1.79</version>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.80</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk18on</artifactId>
-            <version>1.79</version>
+            <version>1.80</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>

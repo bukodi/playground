@@ -22,7 +22,7 @@ public class BugReproducePQCPrivateKeyASN1 {
             "-----END PRIVATE KEY-----";
 
 
-    // See https://datatracker.ietf.org/doc/draft-ietf-lamps-dilithium-certificates/05/ Appecdix C.1.
+    // See https://datatracker.ietf.org/doc/draft-ietf-lamps-dilithium-certificates/06/ Appecdix C.1.
     private static String ietfExampleMLDSA44 = "-----BEGIN PRIVATE KEY-----\n" +
             "MDICAQAwCwYJYIZIAWUDBAMRBCAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRob\n" +
             "HB0eHw==\n" +
@@ -37,6 +37,13 @@ public class BugReproducePQCPrivateKeyASN1 {
 
     public static void main(String[] args) throws Exception {
         Security.addProvider(new BouncyCastleProvider());
+
+        System.out.println("BC generated key:\n" + bcGeneratedMLDSA44);
+        System.out.println();
+        System.out.println("IETF example key:\n" + ietfExampleMLDSA44);
+
+
+
 
         String pem = ietfExampleMLDSA44;
         byte[] asn1Bytes = (new PemReader( new java.io.StringReader(pem) )).readPemObject().getContent();

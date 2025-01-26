@@ -8,7 +8,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
+	"time"
 )
 
 //go:embed testdata
@@ -34,21 +36,25 @@ func TestTLSServer(t *testing.T) {
 		t.Fatalf("%+v", err)
 	}
 
-	ok := func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("HI!")) }
-	s := httptest.NewUnstartedServer(http.HandlerFunc(ok))
+	s := httptest.NewUnstartedServer(http.HandlerFunc(okHandler))
 
 	// Configure the server to present the certficate we created
 	s.TLS = &tls.Config{
 		Certificates: []tls.Certificate{*serverCert},
-		//VerifyConnection: func(state tls.ConnectionState) error {
-		//	state.SignedCertificateTimestamps
-		//},
-		//GetConfigForClient: fnGetCfgForClient,
+		VerifyConnection: func(state tls.ConnectionState) error {
+			return nil
+		},
+		//MinVersion:       tls.VersionTLS13,
+		//MaxVersion:       tls.VersionTLS13,
+		//CurvePreferences: []tls.CurveID{tls.X25519MLKEM768},
 	}
 
 	// make a HTTPS request to the server
 	s.StartTLS()
 	defer s.Close()
+	t.Logf("Server started on:\n%s\n", s.URL)
+
+	time.Sleep(60 * time.Second)
 
 	_, err = http.Get(s.URL)
 
@@ -69,6 +75,22 @@ func TestTLSServer(t *testing.T) {
 		t.Logf("Body: %s", string(body))
 	}
 
+}
+
+func okHandler(w http.ResponseWriter, r *http.Request) {
+	curveId, err := getRequestCurveID2(w)
+	//curveId, err := getRequestCurveID(r)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	if curveId != tls.X25519MLKEM768 {
+		fmt.Fprintf(w, "Insecure connectiom: %x\n\n", curveId)
+	} else {
+		fmt.Fprintf(w, "Secure PQC connection\n\n")
+	}
+
+	w.Write([]byte("HI!"))
 }
 
 func httpsClientGET(url string, clientCert *tls.Certificate, serverCAs ...*x509.Certificate) ([]byte, error) {
@@ -97,4 +119,51 @@ func httpsClientGET(url string, clientCert *tls.Certificate, serverCAs ...*x509.
 	}
 	msg, err := io.ReadAll(resp.Body)
 	return msg, err
+}
+
+// getRequestCurveID returns the curve ID of the request
+func getRequestCurveID(r *http.Request) (tls.CurveID, error) {
+	if r.TLS == nil {
+		return 0, fmt.Errorf("the request is not a TLS connection")
+	}
+
+	// Access the private 'testingOnlyCurveID' field using reflection
+	connState := reflect.ValueOf(*r.TLS)
+	curveIDField := connState.FieldByName("testingOnlyCurveID")
+
+	if !curveIDField.IsValid() {
+		return 0, fmt.Errorf("the curve ID field is not found")
+	}
+
+	// Convert the reflected value to tls.CurveID
+	return tls.CurveID(curveIDField.Uint()), nil
+}
+
+func getRequestCurveID2(w http.ResponseWriter) (tls.CurveID, error) {
+	hijacker, ok := w.(http.Hijacker)
+	if !ok {
+		http.Error(w, "Hijacking not supported", http.StatusInternalServerError)
+	}
+	conn, _, err := hijacker.Hijack()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	conn.
+
+
+	if r.TLS == nil {
+		return 0, fmt.Errorf("the request is not a TLS connection")
+	}
+
+	// Access the private 'testingOnlyCurveID' field using reflection
+	connState := reflect.ValueOf(*r.TLS)
+	curveIDField := connState.FieldByName("testingOnlyCurveID")
+
+	if !curveIDField.IsValid() {
+		return 0, fmt.Errorf("the curve ID field is not found")
+	}
+
+	// Convert the reflected value to tls.CurveID
+	return tls.CurveID(curveIDField.Uint()), nil
 }
