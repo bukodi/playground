@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+// See https://www.netmeister.org/blog/tls-hybrid-kex.html
+
 //go:embed testdata
 var testdata embed.FS
 
@@ -40,14 +42,15 @@ func TestTLSServer(t *testing.T) {
 
 	// Configure the server to present the certficate we created
 	s.TLS = &tls.Config{
-		Certificates: []tls.Certificate{*serverCert},
-		VerifyConnection: func(state tls.ConnectionState) error {
-			return nil
-		},
-		//MinVersion:       tls.VersionTLS13,
+		Certificates:       []tls.Certificate{*serverCert},
+		GetConfigForClient: nil,
+		VerifyConnection:   verifyTLSConnection,
+		MinVersion:         tls.VersionTLS12,
 		//MaxVersion:       tls.VersionTLS13,
-		//CurvePreferences: []tls.CurveID{tls.X25519MLKEM768},
+		CurvePreferences: []tls.CurveID{tls.X25519MLKEM768, tls.X25519},
 	}
+
+	tls.NewListener(s.Listener, s.TLS)
 
 	// make a HTTPS request to the server
 	s.StartTLS()
@@ -77,9 +80,18 @@ func TestTLSServer(t *testing.T) {
 
 }
 
+func verifyTLSConnection(state tls.ConnectionState) error {
+	fmt.Printf("Server name: %s\n", state.ServerName)
+	fmt.Printf("Peer certificates: %v\n", state.PeerCertificates)
+	fmt.Printf("Verified chains: %v\n", state.VerifiedChains)
+	fmt.Printf("Cipher suite: %x\n", state.CipherSuite)
+	fmt.Printf("TLS version: %x\n", state.Version)
+	return nil
+}
+
 func okHandler(w http.ResponseWriter, r *http.Request) {
-	curveId, err := getRequestCurveID2(w)
-	//curveId, err := getRequestCurveID(r)
+	//curveId, err := getRequestCurveID2(w)
+	curveId, err := getRequestCurveID(r)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -123,35 +135,6 @@ func httpsClientGET(url string, clientCert *tls.Certificate, serverCAs ...*x509.
 
 // getRequestCurveID returns the curve ID of the request
 func getRequestCurveID(r *http.Request) (tls.CurveID, error) {
-	if r.TLS == nil {
-		return 0, fmt.Errorf("the request is not a TLS connection")
-	}
-
-	// Access the private 'testingOnlyCurveID' field using reflection
-	connState := reflect.ValueOf(*r.TLS)
-	curveIDField := connState.FieldByName("testingOnlyCurveID")
-
-	if !curveIDField.IsValid() {
-		return 0, fmt.Errorf("the curve ID field is not found")
-	}
-
-	// Convert the reflected value to tls.CurveID
-	return tls.CurveID(curveIDField.Uint()), nil
-}
-
-func getRequestCurveID2(w http.ResponseWriter) (tls.CurveID, error) {
-	hijacker, ok := w.(http.Hijacker)
-	if !ok {
-		http.Error(w, "Hijacking not supported", http.StatusInternalServerError)
-	}
-	conn, _, err := hijacker.Hijack()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	conn.
-
-
 	if r.TLS == nil {
 		return 0, fmt.Errorf("the request is not a TLS connection")
 	}
