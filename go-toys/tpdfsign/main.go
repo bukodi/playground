@@ -83,6 +83,14 @@ func signFn(input string, output string, cert *x509.Certificate, privateKey cryp
 		RevocationData: revocation.InfoArchival{},
 		// custom revocation lookup
 		RevocationFunction: sign.DefaultEmbedRevocationStatusFunction,
+		Appearance: sign.Appearance{
+			Visible:     true,
+			Page:        1,
+			LowerLeftX:  10,
+			LowerLeftY:  10,
+			UpperRightX: 200,
+			UpperRightY: 200,
+		},
 	})
 	return err
 }

@@ -10,7 +10,7 @@ import (
 
 // See:
 
-func main1() {
+func main() {
 	// Replace 'target' with the URL of the server you want to proxy to
 	target, err := url.Parse("https://noreg.hu")
 	if err != nil {

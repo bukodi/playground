@@ -5,9 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/errdefs"
@@ -114,7 +114,7 @@ func (kc *KeycloakContainer) Start(ctx context.Context) error {
 	if exists, err := kc.checkImageExists(ctx); err != nil {
 		return fmt.Errorf("image check failed: %w", err)
 	} else if !exists {
-		reader, err := kc.cli.ImagePull(ctx, kc.Image, types.ImagePullOptions{})
+		reader, err := kc.cli.ImagePull(ctx, kc.Image, image.PullOptions{})
 		if err != nil {
 			return fmt.Errorf("image pull failed: %w", err)
 		}
@@ -141,12 +141,12 @@ func (kc *KeycloakContainer) Start(ctx context.Context) error {
 		kc.id = resp.ID
 	}
 
-	if err := kc.cli.ContainerStart(ctx, kc.id, types.ContainerStartOptions{}); err != nil {
+	if err := kc.cli.ContainerStart(ctx, kc.id, container.StartOptions{}); err != nil {
 		return fmt.Errorf("container start failed: %w", err)
 	}
 
 	// Replace "container_id" with your container's ID
-	out, err := kc.cli.ContainerLogs(ctx, kc.id, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Follow: true})
+	out, err := kc.cli.ContainerLogs(ctx, kc.id, container.LogsOptions{ShowStdout: true, ShowStderr: true, Follow: true})
 	if err != nil {
 		panic(err)
 	}
@@ -276,7 +276,7 @@ func (kc *KeycloakContainer) checkImageExists(ctx context.Context) (bool, error)
 	filterArgs := filters.NewArgs()
 	filterArgs.Add("reference", kc.Image)
 
-	if images, err := kc.cli.ImageList(ctx, types.ImageListOptions{
+	if images, err := kc.cli.ImageList(ctx, image.ListOptions{
 		Filters: filterArgs,
 	}); err != nil {
 		return false, err
@@ -291,13 +291,13 @@ func (kc *KeycloakContainer) removeExistingContainers(ctx context.Context) (retE
 	filterArgs := filters.NewArgs()
 	filterArgs.Add("name", kc.ContainerName)
 
-	if containers, err := kc.cli.ContainerList(ctx, types.ContainerListOptions{
+	if containers, err := kc.cli.ContainerList(ctx, container.ListOptions{
 		Filters: filterArgs,
 	}); err != nil {
 		return fmt.Errorf("can't list existing containers: %w", err)
 	} else {
 		for _, c := range containers {
-			if err = kc.cli.ContainerRemove(ctx, c.ID, types.ContainerRemoveOptions{
+			if err = kc.cli.ContainerRemove(ctx, c.ID, container.RemoveOptions{
 				Force: true,
 			}); err != nil {
 				retError = errors.Join(retError, fmt.Errorf("error removing container: %w", err))
