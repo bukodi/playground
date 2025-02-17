@@ -29,7 +29,6 @@ func main() {
 	} else {
 		log.Println("Signed PDF written to ")
 	}
-
 }
 
 func signFn(input string, output string, cert *x509.Certificate, privateKey crypto.Signer) error {
