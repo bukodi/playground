@@ -45,9 +45,9 @@ func TestTLSServer(t *testing.T) {
 		Certificates:       []tls.Certificate{*serverCert},
 		GetConfigForClient: nil,
 		VerifyConnection:   verifyTLSConnection,
-		MinVersion:         tls.VersionTLS12,
+		MinVersion:         tls.VersionTLS13,
 		//MaxVersion:       tls.VersionTLS13,
-		CurvePreferences: []tls.CurveID{tls.X25519MLKEM768, tls.X25519},
+		CurvePreferences: []tls.CurveID{tls.X25519MLKEM768},
 	}
 
 	tls.NewListener(s.Listener, s.TLS)
@@ -86,12 +86,18 @@ func verifyTLSConnection(state tls.ConnectionState) error {
 	fmt.Printf("Verified chains: %v\n", state.VerifiedChains)
 	fmt.Printf("Cipher suite: %x\n", state.CipherSuite)
 	fmt.Printf("TLS version: %x\n", state.Version)
+	if curveId, err := getTLSCurveID(&state); err != nil {
+		fmt.Printf("TLS curve id error:  %s\n", err.Error())
+	} else {
+		fmt.Printf("TLS curve id:  %x\n", curveId)
+	}
+
 	return nil
 }
 
 func okHandler(w http.ResponseWriter, r *http.Request) {
-	//curveId, err := getRequestCurveID2(w)
-	curveId, err := getRequestCurveID(r)
+	//curveId, err := getRequestCurveID(r)
+	curveId, err := getTLSCurveID(r.TLS)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -134,6 +140,23 @@ func httpsClientGET(url string, clientCert *tls.Certificate, serverCAs ...*x509.
 }
 
 // getRequestCurveID returns the curve ID of the request
+func getTLSCurveID(tlsState *tls.ConnectionState) (tls.CurveID, error) {
+	if tlsState == nil {
+		return 0, fmt.Errorf("the request is not a TLS connection")
+	}
+
+	// Access the private 'testingOnlyCurveID' field using reflection
+	connState := reflect.ValueOf(*tlsState)
+	curveIDField := connState.FieldByName("testingOnlyCurveID")
+
+	if !curveIDField.IsValid() {
+		return 0, fmt.Errorf("the curve ID field is not found")
+	}
+
+	// Convert the reflected value to tls.CurveID
+	return tls.CurveID(curveIDField.Uint()), nil
+}
+
 func getRequestCurveID(r *http.Request) (tls.CurveID, error) {
 	if r.TLS == nil {
 		return 0, fmt.Errorf("the request is not a TLS connection")
