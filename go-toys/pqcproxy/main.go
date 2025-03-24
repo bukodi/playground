@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"embed"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
@@ -14,7 +15,8 @@ import (
 
 func main() {
 	// Replace 'target' with the URL of the server you want to proxy to
-	target, err := url.Parse("https://isitquantumsafe.info/")
+	//target, err := url.Parse("https://isitquantumsafe.info/")
+	target, err := url.Parse("https://index.hu/")
 	if err != nil {
 		panic(err)
 	}
@@ -36,6 +38,11 @@ func main() {
 		panic(err)
 	}
 
+	// Create a custom listener on the desired port
+	listener, err := net.Listen("tcp", ":8888")
+	if err != nil {
+		panic(err)
+	}
 	s := httptest.NewUnstartedServer(http.HandlerFunc(proxy.ServeHTTP))
 
 	// Configure the server to present the certficate we created
@@ -46,7 +53,8 @@ func main() {
 		CurvePreferences:   []tls.CurveID{tls.X25519MLKEM768, tls.X25519},
 	}
 
-	tls.NewListener(s.Listener, s.TLS)
+	// Use the custom listener
+	s.Listener = tls.NewListener(listener, s.TLS)
 
 	// make a HTTPS request to the server
 	s.StartTLS()
