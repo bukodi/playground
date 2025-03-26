@@ -3,6 +3,7 @@ package toauth
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 func oauth2Handler(w http.ResponseWriter, r *http.Request) {
@@ -27,5 +28,18 @@ func oauth2Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "Token: %v", token)
+
+	// Store the token in a cookie
+	tokenCookie := &http.Cookie{
+		Name:     "oauth_token",
+		Value:    token.AccessToken,
+		Path:     "/",
+		HttpOnly: false, // Set to false so JavaScript can access it
+		Secure:   r.TLS != nil,
+		MaxAge:   int(token.Expiry.Sub(time.Now()).Seconds()), // Set expiry to match token expiry
+	}
+	http.SetCookie(w, tokenCookie)
+
+	// Redirect to the home page
+	http.Redirect(w, r, "/", http.StatusFound)
 }
