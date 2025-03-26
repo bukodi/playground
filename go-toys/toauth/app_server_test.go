@@ -15,6 +15,7 @@ func TestOauth2(t *testing.T) {
 	rootHandler.HandleFunc("/oauth2", oauth2Handler)
 	rootHandler.HandleFunc("/", staticHandler)
 	rootHandler.HandleFunc("/api/oauthLoginURL/{provider}", handleOauthLoginURL)
+	rootHandler.HandleFunc("/api/oauthProviders", handleListOauthProviders)
 
 	srv := httptest.NewUnstartedServer(rootHandler)
 	var err error

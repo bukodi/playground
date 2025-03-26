@@ -2,22 +2,20 @@ package toauth
 
 import (
 	"fmt"
-	"golang.org/x/oauth2"
 	"net/http"
 )
 
 func oauth2Handler(w http.ResponseWriter, r *http.Request) {
-
-	var oauthCfg *oauth2.Config
-
 	r.ParseForm()
 	state := r.Form.Get("state")
-	if state == "google" {
-		oauthCfg = googleOauthConfig(r.URL.String())
-	} else {
-		http.Error(w, "State invalid", http.StatusBadRequest)
+
+	// Get the provider configuration from the registry
+	oauthCfg, err := DefaultRegistry.GetProvider(state)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Invalid state: %s", state), http.StatusBadRequest)
 		return
 	}
+
 	code := r.Form.Get("code")
 	if code == "" {
 		http.Error(w, "Code not found", http.StatusBadRequest)
@@ -29,5 +27,5 @@ func oauth2Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Sprintf("Token: %v", token)
+	fmt.Fprintf(w, "Token: %v", token)
 }
