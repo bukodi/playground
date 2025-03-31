@@ -16,6 +16,8 @@ func TestOauth2(t *testing.T) {
 	rootHandler.HandleFunc("/", staticHandler)
 	rootHandler.HandleFunc("/api/oauthLoginURL/{provider}", handleOauthLoginURL)
 	rootHandler.HandleFunc("/api/oauthProviders", handleListOauthProviders)
+	rootHandler.HandleFunc("/api/user", handleGetCurrentUser)
+	rootHandler.HandleFunc("/api/user/token/{provider}", handleGetUserToken)
 
 	srv := httptest.NewUnstartedServer(rootHandler)
 	var err error
@@ -26,6 +28,6 @@ func TestOauth2(t *testing.T) {
 	srv.Start()
 	defer srv.Close()
 	t.Logf("Server started on:\n%s\n", srv.URL)
+	t.Logf("User repository file: %s\n", DefaultUserRepository.filePath)
 	time.Sleep(60 * time.Second)
-
 }

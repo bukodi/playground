@@ -3,30 +3,89 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>OAuth User Repository Demo</title>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <style>
+        .token-info {
+            word-break: break-all;
+            margin-top: 10px;
+        }
+        .provider-badge {
+            margin-right: 5px;
+        }
+    </style>
     <script>
         // Check if user is logged in on page load
         $(document).ready(function() {
             checkLoginStatus();
+            loadOAuthProviders();
         });
 
         // Function to check if user is logged in
         function checkLoginStatus() {
-            const token = getCookie('oauth_token');
-            if (token) {
-                // User is logged in
-                $('#login-section').hide();
-                $('#logout-section').show();
-                $('#user-info').text('You are logged in');
+            const userId = getCookie('user_id');
+            if (userId) {
+                // User is logged in, fetch user details
+                $.ajax({
+                    url: '/api/user',
+                    method: 'GET',
+                    success: function(user) {
+                        $('#login-section').hide();
+                        $('#user-section').show();
+                        $('#user-info').html(`
+                            <strong>User ID:</strong> ${user.id}<br>
+                            <strong>Email:</strong> ${user.email}<br>
+                            <strong>OAuth Logins:</strong> 
+                            <div id="oauth-logins">
+                                ${user.logins.map(provider => 
+                                    `<span class="label label-primary provider-badge">${provider}</span>`
+                                ).join('')}
+                            </div>
+                        `);
+
+                        // Populate the provider dropdown for token viewing
+                        const tokenSelect = $('#token-provider');
+                        tokenSelect.empty();
+                        user.logins.forEach(provider => {
+                            tokenSelect.append(`<option value="${provider}">${provider}</option>`);
+                        });
+                    },
+                    error: function() {
+                        // Error fetching user, consider them logged out
+                        clearUserCookies();
+                        $('#login-section').show();
+                        $('#user-section').hide();
+                        $('#user-info').text('You are not logged in');
+                    }
+                });
             } else {
                 // User is not logged in
                 $('#login-section').show();
-                $('#logout-section').hide();
+                $('#user-section').hide();
                 $('#user-info').text('You are not logged in');
             }
+        }
+
+        // Function to load available OAuth providers
+        function loadOAuthProviders() {
+            $.ajax({
+                url: '/api/oauthProviders',
+                method: 'GET',
+                success: function(providers) {
+                    const loginButtons = $('#login-buttons');
+                    loginButtons.empty();
+
+                    providers.forEach(provider => {
+                        loginButtons.append(`
+                            <button class="btn btn-primary m-1" onclick="window.location.href='/api/oauthLoginURL/${provider}'">
+                                Login with ${provider.charAt(0).toUpperCase() + provider.slice(1)}
+                            </button>
+                        `);
+                    });
+                }
+            });
         }
 
         // Function to get cookie by name
@@ -37,28 +96,92 @@
             return null;
         }
 
+        // Function to clear user cookies
+        function clearUserCookies() {
+            document.cookie = 'user_id=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = 'oauth_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        }
+
         // Function to logout
         function logout() {
-            // Delete the oauth_token cookie
-            document.cookie = 'oauth_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            // Update UI
+            clearUserCookies();
             checkLoginStatus();
+        }
+
+        // Function to view token for a provider
+        function viewToken() {
+            const provider = $('#token-provider').val();
+            if (!provider) return;
+
+            $.ajax({
+                url: `/api/user/token/${provider}`,
+                method: 'GET',
+                success: function(token) {
+                    $('#token-info').html(`
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">${provider} Token</h3>
+                            </div>
+                            <div class="panel-body">
+                                <strong>Access Token:</strong>
+                                <div class="token-info">${token.access_token}</div>
+
+                                ${token.refresh_token ? `
+                                <strong>Refresh Token:</strong>
+                                <div class="token-info">${token.refresh_token}</div>
+                                ` : ''}
+
+                                <strong>Expiry:</strong>
+                                <div>${new Date(token.expiry).toLocaleString()}</div>
+                            </div>
+                        </div>
+                    `);
+                },
+                error: function(xhr) {
+                    $('#token-info').html(`
+                        <div class="alert alert-danger">
+                            Error fetching token: ${xhr.responseText || 'Unknown error'}
+                        </div>
+                    `);
+                }
+            });
         }
     </script>
 </head>
 
 <body>
 <div class="container">
-    <h1>Index.html</h1>
+    <h1>OAuth User Repository Demo</h1>
     <div id="user-info" class="alert alert-info"></div>
 
     <div id="login-section">
-        <button class="btn btn-primary" onclick="window.location.href='/api/oauthLoginURL/google'">
-            Login with Google
-        </button>
+        <h2>Login with an OAuth Provider</h2>
+        <div id="login-buttons" class="mb-3">
+            <!-- Login buttons will be populated here -->
+        </div>
     </div>
 
-    <div id="logout-section" style="display:none;">
+    <div id="user-section" style="display:none;">
+        <h2>User Information</h2>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">OAuth Tokens</h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label for="token-provider">Select Provider:</label>
+                    <select id="token-provider" class="form-control">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <button class="btn btn-info" onclick="viewToken()">View Token</button>
+                <div id="token-info" class="mt-3">
+                    <!-- Token information will be displayed here -->
+                </div>
+            </div>
+        </div>
+
         <button class="btn btn-danger" onclick="logout()">
             Logout
         </button>
