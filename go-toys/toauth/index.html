@@ -28,6 +28,7 @@
             const userId = getCookie('user_id');
             if (userId) {
                 // User is logged in, fetch user details
+                console.log('Before GET api/user ID:', userId);
                 $.ajax({
                     url: '/api/user',
                     method: 'GET',

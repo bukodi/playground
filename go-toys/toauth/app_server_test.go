@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -27,7 +28,7 @@ func TestOauth2(t *testing.T) {
 	}
 	srv.Start()
 	defer srv.Close()
-	t.Logf("Server started on:\n%s\n", srv.URL)
+	t.Logf("Server started on:\n%s\n", strings.Replace(srv.URL, "127.0.0.1", "localhost", -1))
 	t.Logf("User repository file: %s\n", DefaultUserRepository.filePath)
-	time.Sleep(60 * time.Second)
+	time.Sleep(600 * time.Second)
 }
