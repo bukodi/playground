@@ -11,7 +11,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.net.ssl.*;
+import java.net.ServerSocket;
+import java.net.SocketOption;
 import java.security.*;
+import java.util.Set;
 
 public class TestBouncyCastlePQC {
 
@@ -22,6 +26,33 @@ public class TestBouncyCastlePQC {
         }
     }
 
+    @Test
+    public void testSSLSocketFactory() throws Exception {
+        // Create SSLContext with Bouncy Castle provider
+        SSLContext context = SSLContext.getInstance("TLS", "BCJSSE");
+
+// Initialize KeyManager and TrustManager factories
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("PKIX", "BCJSSE");
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("PKIX", "BCJSSE");
+
+// Initialize the context
+        context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
+
+// Get the socket factory
+        SSLServerSocketFactory ssf = context.getServerSocketFactory();
+
+// Create SSL socket with specific cipher suites
+        ServerSocket ss = ssf.createServerSocket(10443);
+
+        String[] cipherSuites = ssf.getSupportedCipherSuites();
+        for (String cipherSuite : cipherSuites) {
+            System.out.println("Cipher suite: " + cipherSuite);
+        }
+        Set<SocketOption<?>> opts = ss.supportedOptions();
+        for (SocketOption<?> opt : opts) {
+            System.out.println("Socket option: " + opt.name());
+        }
+    }
 
     @Test
     public void testMLDSAApi() throws Exception {
@@ -48,10 +79,10 @@ public class TestBouncyCastlePQC {
         kpg.initialize(DilithiumParameterSpec.dilithium5, new SecureRandom());
         KeyPair kp = kpg.generateKeyPair();
 
-        String privatePem = PQCUtil.exportKey( kp.getPrivate());
+        String privatePem = PQCUtil.exportKey(kp.getPrivate());
         System.out.println("Private key PEM: " + privatePem);
 
-        String publicPem = PQCUtil.exportKey( kp.getPublic());
+        String publicPem = PQCUtil.exportKey(kp.getPublic());
         System.out.println("Public key PEM: " + publicPem);
 
         PublicKey pubKey2 = PQCUtil.importPublicKey(publicPem);
@@ -67,10 +98,10 @@ public class TestBouncyCastlePQC {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance(MLKEMParameterSpec.ml_kem_512.getName(), "BC");
         kpg.initialize(MLKEMParameterSpec.ml_kem_512, new SecureRandom());
         KeyPair kp = kpg.generateKeyPair();
-        String privatePem = PQCUtil.exportKey( kp.getPrivate());
+        String privatePem = PQCUtil.exportKey(kp.getPrivate());
         System.out.println("Private key PEM: " + privatePem);
 
-        String publicPem = PQCUtil.exportKey( kp.getPublic());
+        String publicPem = PQCUtil.exportKey(kp.getPublic());
         System.out.println("Public key PEM: " + publicPem);
 
         PublicKey pubKey2 = PQCUtil.importPublicKey(publicPem);
@@ -85,10 +116,10 @@ public class TestBouncyCastlePQC {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance(KyberParameterSpec.kyber512.getName(), "BC");
         kpg.initialize(KyberParameterSpec.kyber512, new SecureRandom());
         KeyPair kp = kpg.generateKeyPair();
-        String privatePem = PQCUtil.exportKey( kp.getPrivate());
+        String privatePem = PQCUtil.exportKey(kp.getPrivate());
         System.out.println("Private key PEM: " + privatePem);
 
-        String publicPem = PQCUtil.exportKey( kp.getPublic());
+        String publicPem = PQCUtil.exportKey(kp.getPublic());
         System.out.println("Public key PEM: " + publicPem);
 
         PublicKey pubKey2 = PQCUtil.importPublicKey(publicPem);
