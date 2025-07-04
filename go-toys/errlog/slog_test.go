@@ -54,11 +54,11 @@ func foo(ctx context.Context) {
 }
 
 func bar(ctx context.Context) error {
-	slog.Info("info from bar")
+	slog.Info("info from the bar")
 	slog.InfoContext(ctx, "info from bar with ctx")
 	slog.Debug("debug from bar")
 	slog.DebugContext(ctx, "debug from bar with ctx")
-	return errors.New("error occurred in bar")
+	return errors.New("an error occurred in the bar")
 }
 
 func TestSlogPlain(t *testing.T) {
