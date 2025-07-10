@@ -64,6 +64,23 @@ func TestParseCSV(t *testing.T) {
 	fmt.Printf("Number of distinct hostnames: %d\n", len(byHostName))
 	fmt.Printf("Number of distinct soeid-hostname pairs: %d\n", len(countBySoeIdAndHostName))
 
+	{
+		var builder strings.Builder
+		for soieId, _ := range bySoeID {
+			builder.WriteString(soieId + "\n")
+		}
+
+		os.WriteFile("/home/lbukodi/Downloads/nte_exists_soeids.csv", []byte(builder.String()), 0644)
+	}
+	{
+		var builder strings.Builder
+		for hostName, _ := range byHostName {
+			builder.WriteString(hostName + "\n")
+		}
+
+		os.WriteFile("/home/lbukodi/Downloads/nte_exists_hosts.csv", []byte(builder.String()), 0644)
+	}
+
 	countHostsBySoeID := map[string]int{}
 	countSoeIdByHosts := map[string]int{}
 	for soeidAndHostname, _ := range countBySoeIdAndHostName {

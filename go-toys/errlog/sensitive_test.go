@@ -3,6 +3,7 @@ package errlog
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"testing"
@@ -36,6 +37,30 @@ func TestSensitiveStringInStruct(t *testing.T) {
 		Username: "Alice",
 		Password: "s3cr3t",
 	}
+
+	slog.Info("Ok", "user", u)
+
+	result := fmt.Sprintf("%s, %v, %+v, %#v", u, u, u, u)
+	t.Logf("Result: %s", result)
+	t.Logf("Real content: %s", string(u.Password))
+}
+
+func TestSensitiveStringInStructJson(t *testing.T) {
+	type User struct {
+		Username string
+		Password SensitiveString
+	}
+
+	u := User{
+		Username: "Alice",
+		Password: "s3cr3t",
+	}
+
+	data, err := json.MarshalIndent(u, "", "  ")
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+	t.Logf("JSON Result: %s", data)
 
 	slog.Info("Ok", "user", u)
 

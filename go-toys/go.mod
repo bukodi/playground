@@ -19,11 +19,13 @@ require (
 	github.com/go-ble/ble v0.0.0-20240122180141-8c5522f54333
 	github.com/go-git/go-git/v5 v5.13.2
 	github.com/gocql/gocql v1.7.0
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 	github.com/google/go-tpm v0.9.5
 	github.com/google/go-tpm-tools v0.4.4
 	github.com/knadh/koanf/parsers/json v0.1.0
 	github.com/knadh/koanf/providers/rawbytes v0.1.0
 	github.com/knadh/koanf/v2 v2.1.2
+	github.com/maypok86/otter/v2 v2.1.0
 	github.com/nats-io/nats-server/v2 v2.11.4
 	github.com/nats-io/nats.go v1.43.0
 	github.com/neurosnap/sentences v1.1.2
@@ -106,7 +108,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/cel-go v0.25.0 // indirect
 	github.com/google/go-configfs-tsm v0.3.2 // indirect

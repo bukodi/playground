@@ -66,15 +66,7 @@ func TestSlogPlain(t *testing.T) {
 	foo(ctx)
 }
 
-var dynamicLevel = slog.LevelInfo
-
-type inlineLeveler struct {
-}
-
-func (inlineLeveler) Level() slog.Level {
-	return dynamicLevel
-}
-func TestSlogWithHandler(t *testing.T) {
+func TestSlogLevelerVar(t *testing.T) {
 	ctx := context.TODO()
 	foo(ctx)
 
@@ -89,10 +81,12 @@ func TestSlogWithHandler(t *testing.T) {
 
 	foo(ctx) //pkgLogger = NewPkgLogger(nil)
 
+	dynamicLevel := &slog.LevelVar{}
+
 	// Change again
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource:   false,
-		Level:       inlineLeveler{},
+		Level:       dynamicLevel,
 		ReplaceAttr: nil,
 	})))
 
@@ -100,7 +94,13 @@ func TestSlogWithHandler(t *testing.T) {
 
 	slog.Info("top level info")
 	slog.Debug("top level debug")
-	dynamicLevel = slog.LevelDebug
+	dynamicLevel.Set(slog.LevelDebug)
+	if result, err := dynamicLevel.AppendText([]byte("cica")); err != nil {
+		t.Fatalf("error: %s", err)
+	} else {
+		t.Logf("result: %s", result)
+	}
+
 	slog.Info("top level info after dynamicLevel = slog.LevelDebug")
 	slog.Debug("top level debug after dynamicLevel = slog.LevelDebug")
 
@@ -128,4 +128,14 @@ func TestSlogHandler(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func TestSlogHandlerWithAttrs(t *testing.T) {
+	slog.Info("without attrs")
+	slog.Info("with one attr", slog.String("key", "value"))
+	slog.Info("with empty attr", slog.Attr{})
+	slog.Info("with empty and one attr", slog.Attr{}, slog.String("key", "value"))
+
+	ctx := t.Context()
+	slog.InfoContext(ctx, "with context and one attr", slog.String("key", "value"))
 }
