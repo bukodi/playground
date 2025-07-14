@@ -1,3 +1,7 @@
+Useful link:
+https://betterstack.com/community/guides/logging/logging-in-go/
+
+
 # Error handling technics
 
 ## Checking error with compact if

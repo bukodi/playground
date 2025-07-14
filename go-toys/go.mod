@@ -38,6 +38,7 @@ require (
 	github.com/phires/go-guerrilla v1.6.7
 	github.com/rivo/tview v0.0.0-20241227133733-17b7edb88c57
 	github.com/samber/do v1.6.0
+	github.com/samber/slog-multi v1.4.1
 	github.com/steambap/captcha v1.4.1
 	github.com/stretchr/testify v1.10.0
 	github.com/symbolicsoft/kyber-k2so v0.2.3
@@ -57,6 +58,7 @@ require (
 	golang.org/x/tools v0.33.0
 	golang.org/x/vuln v1.1.4
 	google.golang.org/grpc v1.72.1
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
 	tinygo.org/x/bluetooth v0.11.0
@@ -162,6 +164,8 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/saltosystems/winrt-go v0.0.0-20240509164145-4f7860a3bd2b // indirect
+	github.com/samber/lo v1.51.0 // indirect
+	github.com/samber/slog-common v0.19.0 // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.3.0 // indirect

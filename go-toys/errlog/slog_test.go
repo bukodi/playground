@@ -131,6 +131,7 @@ func TestSlogHandler(t *testing.T) {
 }
 
 func TestSlogHandlerWithAttrs(t *testing.T) {
+	//slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})))
 	slog.Info("without attrs")
 	slog.Info("with one attr", slog.String("key", "value"))
 	slog.Info("with empty attr", slog.Attr{})
@@ -138,4 +139,11 @@ func TestSlogHandlerWithAttrs(t *testing.T) {
 
 	ctx := t.Context()
 	slog.InfoContext(ctx, "with context and one attr", slog.String("key", "value"))
+
+	slog.Info("with groupAttr", slog.Group("group1", slog.String("groupKey1", "value 1"), slog.String("groupKey1", "value 1")))
+
+	slog.Info("with groupAttr without group name", slog.Group("", slog.String("groupKey1", "value 1"), slog.String("groupKey1", "value 1")))
+
+	slog.Info("with a duplicate key", slog.String("key", "value1"), slog.String("key", "value2"))
+
 }
