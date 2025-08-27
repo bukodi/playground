@@ -3,15 +3,16 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/go-ble/ble"
-	"github.com/go-ble/ble/examples/lib/dev"
-	"github.com/go-ble/ble/linux"
-	"github.com/go-ble/ble/linux/hci/cmd"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/go-ble/ble"
+	"github.com/go-ble/ble/examples/lib/dev"
+	"github.com/go-ble/ble/linux"
+	"github.com/go-ble/ble/linux/hci/cmd"
 )
 
 var (

@@ -152,7 +152,7 @@ func escapeCSV(s string) string {
 	return s
 }
 
-func main() {
+func main2() {
 	hostPtr := flag.String("host", "", "Target host to scan (required)")
 	startPortPtr := flag.Int("start", 1, "Starting port number")
 	endPortPtr := flag.Int("end", 1024, "Ending port number")
