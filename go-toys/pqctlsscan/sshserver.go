@@ -8,11 +8,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net"
 	"os"
 	"os/exec"
-	"os/signal"
 	"strings"
 	"syscall"
 	"time"
@@ -20,94 +19,148 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func main() {
-	// Configuration: replace with your own user, password, and authorized public key as needed.
-	const (
-		listenAddr      = ":2222"
-		allowedUser     = "demo"
-		allowedPassword = "s3cret" // set to empty "" to disable password logins
-	)
-	// Optional: set an authorized_keys-style line for public key auth
-	// e.g., `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE... comment`
-	authorizedPubKeyLine := os.Getenv("AUTHORIZED_PUBKEY") // or hardcode for testing
+type authorizedPubKeyLine string
 
-	// Host key: generate an in-memory Ed25519 key
+type SSHServer struct {
+	AuthorizedPubKeyLines []authorizedPubKeyLine
+	ListenAddr            string
+	AllowedUser           string
+	AllowedPassword       string
+	AllowPQCKex           bool
+	AllowNonPQCKex        bool
+	ln                    net.Listener
+	serveCh               chan struct{}
+}
+
+func (s *SSHServer) Start(ctx context.Context) error {
+	if s.ListenAddr == "" {
+		s.ListenAddr = ":2222"
+	}
+
+	// Generate a host key (ephemeral in-memory)
 	_, hostPriv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		log.Fatalf("failed to generate host key: %v", err)
+		return fmt.Errorf("failed to generate host key: %w", err)
 	}
 	hostSigner, err := ssh.NewSignerFromSigner(hostPriv)
 	if err != nil {
-		log.Fatalf("failed to create host signer: %v", err)
+		return fmt.Errorf("failed to create host signer: %w", err)
 	}
 
-	// Build server config
+	kexAlgos := make([]string, 0)
+	for _, algo := range ssh.SupportedAlgorithms().KeyExchanges {
+		isPqcAlgo := strings.Contains(strings.ToLower(algo), "mlkem")
+		if s.AllowPQCKex && isPqcAlgo {
+			kexAlgos = append(kexAlgos, algo)
+		}
+		if s.AllowNonPQCKex && !isPqcAlgo {
+			kexAlgos = append(kexAlgos, algo)
+		}
+	}
+
 	cfg := &ssh.ServerConfig{
+		Config: ssh.Config{
+			KeyExchanges: kexAlgos,
+		},
 		ServerVersion: "SSH-2.0-GoMiniSSH",
 	}
 	cfg.AddHostKey(hostSigner)
+	slog.Info("Allowed kex", "kexAlgos", cfg.KeyExchanges)
 
-	// Public key auth
-	var authorizedKey ssh.PublicKey
-	if strings.TrimSpace(authorizedPubKeyLine) != "" {
-		parsed, _, _, _, e := ssh.ParseAuthorizedKey([]byte(authorizedPubKeyLine))
-		if e != nil {
-			log.Fatalf("failed to parse AUTHORIZED_PUBKEY: %v", e)
+	// Build authorized keys list
+	var authorizedKeys []ssh.PublicKey
+	for _, line := range s.AuthorizedPubKeyLines {
+		str := strings.TrimSpace(string(line))
+		if str == "" {
+			continue
 		}
-		authorizedKey = parsed
+		parsed, _, _, _, e := ssh.ParseAuthorizedKey([]byte(str))
+		if e != nil {
+			return fmt.Errorf("failed to parse authorized pubkey line: %w", e)
+		}
+		authorizedKeys = append(authorizedKeys, parsed)
+	}
+	if len(authorizedKeys) > 0 {
 		cfg.PublicKeyCallback = func(meta ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
-			if meta.User() != allowedUser {
+			if s.AllowedUser != "" && meta.User() != s.AllowedUser {
 				return nil, fmt.Errorf("unknown user")
 			}
-			if bytes.Equal(key.Marshal(), authorizedKey.Marshal()) {
-				return &ssh.Permissions{}, nil
+			for _, k := range authorizedKeys {
+				if bytes.Equal(key.Marshal(), k.Marshal()) {
+					return &ssh.Permissions{}, nil
+				}
 			}
 			return nil, fmt.Errorf("unauthorized key")
 		}
 	}
 
-	// Password auth (optional)
-	if allowedPassword != "" {
+	if s.AllowedPassword != "" {
 		cfg.PasswordCallback = func(meta ssh.ConnMetadata, pass []byte) (*ssh.Permissions, error) {
-			if meta.User() == allowedUser && string(pass) == allowedPassword {
+			if (s.AllowedUser == "" || meta.User() == s.AllowedUser) && string(pass) == s.AllowedPassword {
 				return &ssh.Permissions{}, nil
 			}
 			return nil, errors.New("invalid credentials")
 		}
 	}
 
-	// If neither callback is set, no one can log in
-	if cfg.PublicKeyCallback == nil && cfg.PasswordCallback == nil {
-		log.Fatal("no authentication method enabled; set AUTHORIZED_PUBKEY and/or allowedPassword")
-	}
-
-	ln, err := net.Listen("tcp", listenAddr)
+	ln, err := net.Listen("tcp", s.ListenAddr)
 	if err != nil {
-		log.Fatalf("listen error: %v", err)
+		return fmt.Errorf("listen error: %w", err)
 	}
-	log.Printf("SSH server listening on %s (user=%s)", listenAddr, allowedUser)
+	s.ln = ln
+	s.serveCh = make(chan struct{})
+	slog.Info("SSH server listening", "addr", s.ListenAddr, "user", s.AllowedUser)
 
-	// Graceful shutdown
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
+	// Serve in background; respect context cancellation
 	go func() {
-		<-ctx.Done()
-		_ = ln.Close()
+		defer close(s.serveCh)
+		// Stop on context cancellation
+		go func() {
+			<-ctx.Done()
+			_ = ln.Close()
+		}()
+		for {
+			nConn, err := ln.Accept()
+			if err != nil {
+				// If closed due to Stop() or ctx cancellation, exit serve loop
+				if ctx.Err() != nil {
+					slog.Info("ssh server shutting down", "reason", "ctx cancelled")
+					return
+				}
+				if ne, ok := err.(net.Error); ok && !ne.Temporary() {
+					return
+				}
+				if strings.Contains(strings.ToLower(err.Error()), "closed") {
+					return
+				}
+				slog.Error("accept error", "err", err)
+				continue
+			}
+			go handleConn(nConn, cfg)
+		}
 	}()
 
-	for {
-		nConn, err := ln.Accept()
-		if err != nil {
-			if ctx.Err() != nil {
-				log.Println("shutting down...")
-				return
-			}
-			log.Printf("accept error: %v", err)
-			continue
-		}
-		go handleConn(nConn, cfg)
+	return nil
+}
+
+func (s *SSHServer) Stop() {
+	if s.ln != nil {
+		_ = s.ln.Close()
 	}
+	if s.serveCh != nil {
+		<-s.serveCh
+	}
+}
+
+func main() {
+	srv := SSHServer{}
+	err := srv.Start(context.Background())
+	if err != nil {
+		slog.Error("failed to start SSH server", "err", err)
+		os.Exit(1)
+	}
+	time.Sleep(time.Second * 10)
+	srv.Stop()
 }
 
 func handleConn(nConn net.Conn, cfg *ssh.ServerConfig) {
@@ -115,11 +168,11 @@ func handleConn(nConn net.Conn, cfg *ssh.ServerConfig) {
 
 	sshConn, chans, reqs, err := ssh.NewServerConn(nConn, cfg)
 	if err != nil {
-		log.Printf("handshake failed: %v", err)
+		slog.Error("handshake failed", "err", err)
 		return
 	}
 	defer sshConn.Close()
-	log.Printf("new ssh connection from %s (%s)", sshConn.RemoteAddr(), sshConn.ClientVersion())
+	slog.Info("new ssh connection", "remote", sshConn.RemoteAddr().String(), "client_version", string(sshConn.ClientVersion()))
 
 	// Discard global requests
 	go ssh.DiscardRequests(reqs)
@@ -132,7 +185,7 @@ func handleConn(nConn net.Conn, cfg *ssh.ServerConfig) {
 		}
 		channel, requests, err := ch.Accept()
 		if err != nil {
-			log.Printf("could not accept channel: %v", err)
+			slog.Error("could not accept channel", "err", err)
 			continue
 		}
 		go handleSession(channel, requests)

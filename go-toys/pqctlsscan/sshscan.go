@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -15,26 +16,32 @@ func scanSSHPortWithErr(host string, port int, timeout time.Duration) (ScanResul
 		Port:    port,
 	}
 
+	kexAlgos := []string{ssh.KeyExchangeMLKEM768X25519}
+
 	// Create an SSH configuration
 	clientCfg := &ssh.ClientConfig{
-		User: "username",
-		Auth: []ssh.AuthMethod{
-			ssh.Password("password"),
-			// or use ssh.PublicKeys(key) for key-based auth
-		},
 		HostKeyCallback: hostKeyCallback,
+		Config: ssh.Config{
+			KeyExchanges: kexAlgos,
+		},
 	}
 	clientCfg.SetDefaults()
 
 	// Establish a TLS connection
 	target := fmt.Sprintf("%s:%d", host, port)
 
-	// Connect to the SSH server
-	conn, err := ssh.Dial("tcp", target, clientCfg)
+	// Connect to the SSH server using PQ key exchange protocol
+	pqConn, err := ssh.Dial("tcp", target, clientCfg)
 	if err != nil {
+		kexInitErr := &ssh.AlgorithmNegotiationError{}
+		if errors.As(err, &kexInitErr) {
+			t.Logf("KexInitError: %v", kexInitErr)
+		} else {
+			t.Logf("OtherError: %v", err)
+		}
 		return result, err
 	}
-	defer conn.Close()
+	defer pqConn.Close()
 	return result, nil
 }
 

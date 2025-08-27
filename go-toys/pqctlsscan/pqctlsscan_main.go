@@ -12,14 +12,16 @@ import (
 )
 
 type ScanResult struct {
-	Address           string `json:"address"`
-	Port              int    `json:"port"`
-	Error             string `json:"error,omitempty"`
-	TLSVersion        string `json:"tlsVersion"`
-	CipherSuite       string `json:"cipherSuite"`
-	ServerCertKeyAlgo string `json:"serverCertKeyAlgo"`
-	CurveName         string `json:"ecCurve"`
-	IsPQCCurve        bool   `json:"isPQCCurve"`
+	Address             string `json:"address"`
+	Port                int    `json:"port"`
+	Error               string `json:"error,omitempty"`
+	TLSVersion          string `json:"tlsVersion"`
+	CipherSuite         string `json:"cipherSuite"`
+	ServerCertKeyAlgo   string `json:"serverCertKeyAlgo"`
+	CurveName           string `json:"ecCurve"`
+	IsPQCCurve          bool   `json:"isPQCCurve"`
+	IsPQKexSupported    bool   `json:"isPQKexSupported"`
+	IsNonPQKexSupported bool   `json:"isNonPQKexSupported"`
 }
 
 func scanTLSPort(host string, port int, timeout time.Duration) (result ScanResult) {

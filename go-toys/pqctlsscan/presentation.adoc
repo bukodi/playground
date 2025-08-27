@@ -1,0 +1,23 @@
+=== Hálózati protokollok egymásra épülése
+
+HTTPS, IMAPS / POP3S / SMTPS, LDAPS, WebSockets over TLS, RDP, Syslog over TLS, QUIC, and many other
+TLS
+TCP
+
+Remote shell, port forwarding, SFTP/SCP, SOCKS5 proxy, GIT,SVN, X11, Ansible
+SSH
+TCP
+
+Egyéb:
+- WireGuard (Modern consumer VPNs: NordVPN, ProtonVPN) Jelenleg nincs is hivatalos PQC támogatása
+- Tor (Onion routing)
+- IPsec (ESP) with IKEv2
+- Link-layer encryption: WPA2/WPA3 for Wifi, and MACsec for Ethernet.
+
+
+=== A TLS és az SSH működése ===
+1. TCP szintű kapcsolat felépítése
+2. Algoritmusok egyeztetése (server hello / msg_kex_init)
+3. KeyExchange -> titkosított csatorna
+4. Felek hitelestése
+
