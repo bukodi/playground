@@ -109,7 +109,8 @@ func (s *SSHServer) Start(ctx context.Context) error {
 	}
 	s.ln = ln
 	s.serveCh = make(chan struct{})
-	slog.Info("SSH server listening", "addr", s.ListenAddr, "user", s.AllowedUser)
+	slog.Debug("SSH server listening", "addr", s.ListenAddr, "user", s.AllowedUser)
+	time.Sleep(time.Second * 1)
 
 	// Serve in background; respect context cancellation
 	go func() {

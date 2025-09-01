@@ -1,39 +1,97 @@
 package main
 
 import (
-	"errors"
-	"os"
+	"fmt"
+	"net"
 	"testing"
 	"time"
 
-	"golang.org/x/crypto/ssh"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestSSHLocalhost(t *testing.T) {
+const (
+	serverHost = "localhost"
+	serverPort = 2201
+	timeout    = time.Hour * 100
+)
 
-	srv := SSHServer{
-		ListenAddr:      "localhost:2222",
-		AllowedUser:     "username",
-		AllowedPassword: "Passw0rd",
-		AllowPQCKex:     false,
-		AllowNonPQCKex:  true,
+func TestSSHKexAlgos(t *testing.T) {
+	testCases := []struct {
+		name              string
+		srvAllowPQCKex    bool
+		srvAllowNonPQCKex bool
+		expectedPqcOk     bool
+		expectedNonPqcOk  bool
+	}{
+		{
+			name:              "Server_nonPQC_only",
+			srvAllowPQCKex:    false,
+			srvAllowNonPQCKex: true,
+			expectedPqcOk:     false,
+			expectedNonPqcOk:  true,
+		},
+		{
+			name:              "Server_PQC_only",
+			srvAllowPQCKex:    true,
+			srvAllowNonPQCKex: false,
+			expectedPqcOk:     true,
+			expectedNonPqcOk:  false,
+		},
+		{
+			name:              "Server_Both_PQC_and_nonPQC",
+			srvAllowPQCKex:    true,
+			srvAllowNonPQCKex: true,
+			expectedPqcOk:     true,
+			expectedNonPqcOk:  true,
+		},
 	}
-	err := srv.Start(t.Context())
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := SSHServer{
+				ListenAddr:      fmt.Sprintf("%s:%d", serverHost, serverPort),
+				AllowedUser:     "username",
+				AllowedPassword: "Passw0rd",
+				AllowPQCKex:     tc.srvAllowPQCKex,
+				AllowNonPQCKex:  tc.srvAllowNonPQCKex,
+			}
+			if err := srv.Start(t.Context()); err != nil {
+				t.Fatalf("failed to start SSH server: %+v (%+v)", err, srv)
+				return
+			} else {
+				defer srv.Stop()
+			}
+
+			pqcKexCompleted, nonPqcKexCompleted, err := checkSSHPort(serverHost, serverPort, timeout)
+			if err != nil {
+				t.Errorf("failed to connect SSH port: %+v", err)
+				return
+			} else {
+				assert.Equal(t, tc.expectedPqcOk, pqcKexCompleted, "PQCKex completed")
+				assert.Equal(t, tc.expectedNonPqcOk, nonPqcKexCompleted, "NonPQCKex completed")
+			}
+		})
+	}
+}
+
+func TestSSHTimeout(t *testing.T) {
+	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", serverHost, serverPort))
 	if err != nil {
-		t.Errorf("failed to start SSH server: %+v", err)
-		os.Exit(1)
-	} else {
-		defer srv.Stop()
+		t.Fatalf("listen error: %+v", err)
 	}
+	defer ln.Close()
 
-	if r, err := scanSSHPortWithErr("localhost", 2222, time.Millisecond*100); err != nil {
-		kexInitErr := &ssh.AlgorithmNegotiationError{}
-		if errors.As(err, &kexInitErr) {
-			t.Logf("KexInitError: %v", kexInitErr)
-		} else {
-			t.Logf("OtherError: %v", err)
-		}
-	} else {
-		t.Logf("Result: %v", r)
+	_, _, err = checkSSHPort(serverHost, serverPort, time.Millisecond*100)
+	if !isNetworkError(err) {
+		t.Errorf("expected network error")
+		return
+	}
+}
+
+func TestSSHNetworkError(t *testing.T) {
+	_, _, err := checkSSHPort(serverHost, serverPort+1, time.Millisecond*100)
+	if !isNetworkError(err) {
+		t.Errorf("expected network error")
+		return
 	}
 }

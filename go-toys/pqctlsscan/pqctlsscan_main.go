@@ -11,37 +11,6 @@ import (
 	"time"
 )
 
-type ScanResult struct {
-	Address             string `json:"address"`
-	Port                int    `json:"port"`
-	Error               string `json:"error,omitempty"`
-	TLSVersion          string `json:"tlsVersion"`
-	CipherSuite         string `json:"cipherSuite"`
-	ServerCertKeyAlgo   string `json:"serverCertKeyAlgo"`
-	CurveName           string `json:"ecCurve"`
-	IsPQCCurve          bool   `json:"isPQCCurve"`
-	IsPQKexSupported    bool   `json:"isPQKexSupported"`
-	IsNonPQKexSupported bool   `json:"isNonPQKexSupported"`
-}
-
-func scanTLSPort(host string, port int, timeout time.Duration) (result ScanResult) {
-	defer func() {
-		if r := recover(); r != nil {
-			result = ScanResult{
-				Address: host,
-				Port:    port,
-				Error:   fmt.Sprintf("panic: %v", r),
-			}
-		}
-	}()
-
-	r, err := scanTLSPortWithErr(host, port, timeout)
-	if err != nil {
-		r.Error = err.Error()
-	}
-	return r
-}
-
 // scanPorts scans a range of ports using multiple goroutines
 func scanPorts(host string, start, end int, timeout time.Duration, concurrency int) []ScanResult {
 	var results []ScanResult
