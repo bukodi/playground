@@ -31,18 +31,40 @@ func scanSSHPortWithErr(host string, port int, timeout time.Duration) (ScanResul
 	target := fmt.Sprintf("%s:%d", host, port)
 
 	// Connect to the SSH server using PQ key exchange protocol
-	pqConn, err := ssh.Dial("tcp", target, clientCfg)
-	if err != nil {
+	pqConn, pqErr := ssh.Dial("tcp", target, clientCfg)
+	if pqErr != nil {
 		kexInitErr := &ssh.AlgorithmNegotiationError{}
-		if errors.As(err, &kexInitErr) {
-			t.Logf("KexInitError: %v", kexInitErr)
+		if errors.As(pqErr, &kexInitErr) {
+			result.IsPQKexSupported = "KexInitError"
 		} else {
-			t.Logf("OtherError: %v", err)
+			// Other error
+			return result, pqErr
 		}
-		return result, err
+	} else {
+		// PQConn successfully established
+		result.IsPQKexSupported = true
+		pqConn.Close()
 	}
-	defer pqConn.Close()
+
+	// Connect to the SSH server using non PQ key exchange protocol
+	clientCfg.Config.KeyExchanges = []string{"diffie-hellman-group-exchange-sha256"}
+	nonPqConn, nonPqErr := ssh.Dial("tcp", target, clientCfg)
+	if nonPqErr != nil {
+		kexInitErr := &ssh.AlgorithmNegotiationError{}
+		if errors.As(nonPqErr, &kexInitErr) {
+			result.IsPQKexSupported = "KexInitError"
+		} else {
+			// Other error
+			return result, nonPqErr
+		}
+	} else {
+		// PQConn successfully established
+		result.IsNonPQKexSupported = true
+		nonPqConn.Close()
+	}
+
 	return result, nil
+
 }
 
 func hostKeyCallback(hostname string, remote net.Addr, key ssh.PublicKey) error {
