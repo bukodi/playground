@@ -33,10 +33,6 @@ type SSHServer struct {
 }
 
 func (s *SSHServer) Start(ctx context.Context) error {
-	if s.ListenAddr == "" {
-		s.ListenAddr = ":2222"
-	}
-
 	// Generate a host key (ephemeral in-memory)
 	_, hostPriv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
@@ -109,8 +105,6 @@ func (s *SSHServer) Start(ctx context.Context) error {
 	}
 	s.ln = ln
 	s.serveCh = make(chan struct{})
-	slog.Debug("SSH server listening", "addr", s.ListenAddr, "user", s.AllowedUser)
-	time.Sleep(time.Second * 1)
 
 	// Serve in background; respect context cancellation
 	go func() {

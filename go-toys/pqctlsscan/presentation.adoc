@@ -20,4 +20,5 @@ Egyéb:
 2. Algoritmusok egyeztetése (server hello / msg_kex_init)
 3. KeyExchange -> titkosított csatorna
 4. Felek hitelestése
+https://www.netmeister.org/blog/tls-hybrid-kex.html
 

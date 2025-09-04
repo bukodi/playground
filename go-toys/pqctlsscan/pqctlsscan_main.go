@@ -32,7 +32,7 @@ func scanPorts(host string, start, end int, timeout time.Duration, concurrency i
 			semaphore <- struct{}{}
 			defer func() { <-semaphore }()
 
-			result := scanTLSPort(host, p, timeout)
+			result := checkTLSPort(host, p, timeout)
 			resultChan <- result
 		}(port)
 	}
@@ -70,15 +70,14 @@ func outputText(w *os.File, results []ScanResult, elapsed time.Duration, verbose
 		return
 	}
 
-	fmt.Fprintf(w, "HOST            \t  PORT\tTLS VER\tCIPHER   \tERROR \n")
-	fmt.Fprintf(w, "----------------\t------\t-------\t---------\t------\n")
+	fmt.Fprintf(w, "HOST            \t  PORT\tTYPE  \tERROR \n")
+	fmt.Fprintf(w, "----------------\t------\t-------\t------\n")
 
 	for _, result := range results {
-		fmt.Fprintf(w, "%-16s\t%6d\t%s\t%s\t%s\n",
+		fmt.Fprintf(w, "%-16s\t%6d\t%s\t%s\n",
 			result.Address,
 			result.Port,
-			result.TLSVersion,
-			result.CipherSuite,
+			result.PortType,
 			result.Error)
 	}
 }
@@ -102,14 +101,13 @@ func outputJSON(w *os.File, results []ScanResult, elapsed time.Duration) {
 }
 
 func outputCSV(w *os.File, results []ScanResult, elapsed time.Duration, verbose bool) {
-	fmt.Fprintf(w, "Host,Port,CipherSuite,TLS Version\n")
+	fmt.Fprintf(w, "Host,Port,Type\n")
 
 	for _, result := range results {
-		fmt.Fprintf(w, "%s,%d,%s,%s\n",
+		fmt.Fprintf(w, "%s,%d,%s\n",
 			result.Address,
 			result.Port,
-			escapeCSV(result.CipherSuite),
-			result.TLSVersion)
+			result.PortType)
 	}
 
 	fmt.Fprintf(w, "\n# Scan completed in %s, found %d open ports\n",

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"net"
 	"syscall"
@@ -23,16 +24,15 @@ type ScanResult struct {
 	Error               string        `json:"error,omitempty"`
 	TestDuration        time.Duration `json:"testDuration"`
 
-	TLSVersion        string `json:"tlsVersion"`
-	TLSCurveName      string `json:"ecCurve"`
-	CipherSuite       string `json:"cipherSuite"`
 	ServerCertKeyAlgo string `json:"serverCertKeyAlgo"`
-	IsPQCCurve        bool   `json:"isPQCCurve"`
 }
 
 func isNetworkError(err error) bool {
 	if err == nil {
 		return false
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
 	}
 	var netErr *net.OpError
 	if !errors.As(err, &netErr) {

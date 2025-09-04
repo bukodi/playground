@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-var pqKexAlogs []string = []string{ssh.KeyExchangeMLKEM768X25519}
+var pqKexAlogs = []string{ssh.KeyExchangeMLKEM768X25519}
 var nonPqKeyAlogs = []string{
 	ssh.KeyExchangeCurve25519,
 	ssh.KeyExchangeECDHP256,
