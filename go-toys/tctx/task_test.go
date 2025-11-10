@@ -22,7 +22,7 @@ var testTask = func(ctx context.Context, name string, dur time.Duration) error {
 	}
 }
 
-func TestExecuteSimple(t *testing.T) {
+func TestExecuteSecondTask(t *testing.T) {
 	timeUnit := time.Second
 	ste := &SingleThreadExecutor{}
 
@@ -38,6 +38,38 @@ func TestExecuteSimple(t *testing.T) {
 			time.Sleep(2 * timeUnit)
 			err := ste.Execute(t.Context(), 20*timeUnit, func(ctx context.Context) error {
 				return testTask(ctx, "task2", 5*timeUnit)
+			})
+			t.Logf("err = %v", err)
+		})
+		wg.Wait()
+	})
+}
+
+func TestExecuteTimeout(t *testing.T) {
+	timeUnit := time.Second
+	ste := &SingleThreadExecutor{}
+
+	synctest.Test(t, func(t *testing.T) {
+		var wg sync.WaitGroup
+		wg.Go(func() {
+			err := ste.Execute(t.Context(), 5*timeUnit, func(ctx context.Context) error {
+				return testTask(ctx, "task1", 10*timeUnit)
+			})
+			t.Logf("err = %v", err)
+		})
+		wg.Wait()
+	})
+}
+
+func TestExecuteSimple(t *testing.T) {
+	timeUnit := time.Second
+	ste := &SingleThreadExecutor{}
+
+	synctest.Test(t, func(t *testing.T) {
+		var wg sync.WaitGroup
+		wg.Go(func() {
+			err := ste.Execute(t.Context(), 20*timeUnit, func(ctx context.Context) error {
+				return testTask(ctx, "task1", 10*timeUnit)
 			})
 			t.Logf("err = %v", err)
 		})
