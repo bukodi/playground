@@ -6,8 +6,10 @@ import (
 
 var adapter = bluetooth.DefaultAdapter
 
+const pocpF6MAC = "B0:9C:63:C6:77:5B"
+
 func main() {
-	myPhoneMAC, err := bluetooth.ParseMAC("F6:7E:46:0A:D9:BD")
+	myPhoneMAC, err := bluetooth.ParseMAC(pocpF6MAC)
 	if err != nil {
 		panic("could not parse MAC address: " + err.Error())
 	}
@@ -38,7 +40,7 @@ func main() {
 }
 
 func onScanEvent(adapter *bluetooth.Adapter, device bluetooth.ScanResult) {
-	if device.Address.String() == "F6:7E:46:0A:D9:BD" {
+	if device.Address.String() == pocpF6MAC {
 		println("found device:", device.Address.String(), device.RSSI, device.LocalName())
 	}
 }
