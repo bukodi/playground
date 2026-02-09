@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Gmail Encryptor",
+  "version": "1.0",
+  "description": "Encrypts outgoing emails and decrypts incoming ones.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
+}
